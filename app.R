@@ -39,7 +39,10 @@ breeding_col_styles <- map(month_cols, breeding_formatting)
 names(breeding_col_styles) <- month_cols
 
 other_cols <- list(common_name = colDef("Common Name",
-filterable = TRUE),
+filterable = TRUE,
+sticky = "left",
+style = list(borderRight = "2px solid #eee"),
+      headerStyle = list(borderRight = "1px solid #eee")),
 priority_species = colDef("Priority",
 filterable = TRUE))
 
