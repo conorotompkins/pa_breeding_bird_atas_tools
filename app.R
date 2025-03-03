@@ -68,7 +68,19 @@ ui <- page_navbar(
 
       ),
 
-      nav_panel("Safe dates")
+      nav_panel("Safe dates"),
+
+      nav_panel(
+        
+        "About",
+
+        tags$a(href="https://ebird.org/atlaspa/home", "Pennsylvania Bird Atlas 3",  target="_blank"),
+
+        p("App developed by Conor Tompkins")
+      
+      )
+
+
 
 )
 
