@@ -58,6 +58,8 @@ server <- function(input, output) {
 
 ui <- page_navbar(
 
+  fillable_mobile = TRUE,
+
   title = "Breeding Bird Calendar",
 
   nav_panel(
@@ -79,9 +81,6 @@ ui <- page_navbar(
         p("App developed by Conor Tompkins")
       
       )
-
-
-
-)
+    )
 
 shinyApp(ui = ui, server = server)
