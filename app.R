@@ -48,6 +48,10 @@ filterable = TRUE))
 
 breeding_table_formatting <- c(other_cols, breeding_col_styles)
 
+safe_dates <- read_csv("inputs/bird_safe_dates.csv") |> 
+  select(common_name, safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end) |> 
+  arrange(safe_date_probable_start)
+
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
 
@@ -57,6 +61,21 @@ server <- function(input, output) {
       reactable(columns = breeding_table_formatting)
 
 })
+  
+  output$breeding_legend <- renderReactable({
+
+    reactable(safe_dates,
+
+      columns = list(
+
+        common_name = colDef(name = "Common Name"),
+        safe_date_probable_start = colDef(name = "Probable Start"),
+        safe_date_probable_end = colDef(name = "Probable End"),
+        safe_date_possible_start = colDef(name = "Possible Start"),
+        safe_date_possible_end = colDef(name = "Possible End"))
+      )
+
+  })
 }
 
 ui <- page_navbar(
@@ -73,7 +92,15 @@ ui <- page_navbar(
 
       ),
 
-      nav_panel("Safe dates"),
+      nav_panel("Safe dates",
+    
+      card(reactableOutput("breeding_legend"))
+
+    ),
+
+      nav_panel("Glossary"    
+   
+    ),
 
       nav_panel(
         
