@@ -13,6 +13,12 @@ breeding_calendar <- breeding_calendar |>
   mutate(across(all_of(month_cols), \(x)replace_na(x,  ""))) |> 
   select(-taxonomic_order)
 
+glossary_table <- tibble(
+  Code = c("B", "E", "M", "N"),
+  Description = c("Breeding season only", "Either migration or breeding", "Migration", "Non-breeding season")
+)
+
+#formatting for calendar
 breeding_formatting <- function(x) {
   colDef(
     style = function(value) {
@@ -28,7 +34,6 @@ breeding_formatting <- function(x) {
         color <- "white"
       }
       list(background = color,
-        fontWeight = "bold",
         alpha = .5)
       }
     )
@@ -47,6 +52,13 @@ priority_species = colDef("Priority",
 filterable = TRUE))
 
 breeding_table_formatting <- c(other_cols, breeding_col_styles)
+
+#formatting for glossary
+glossary_cols <- names(glossary_table)
+
+glossary_col_styles <- map(glossary_cols, breeding_formatting)
+
+names(glossary_col_styles) <- glossary_cols
 
 safe_dates <- read_csv("inputs/bird_safe_dates.csv") |> 
   select(common_name, safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end) |> 
@@ -76,6 +88,13 @@ server <- function(input, output) {
       )
 
   })
+
+  output$glossary_table <- renderReactable({
+
+    glossary_table |>
+      reactable(columns = glossary_col_styles)
+
+  })
 }
 
 ui <- page_navbar(
@@ -98,7 +117,9 @@ ui <- page_navbar(
 
     ),
 
-      nav_panel("Glossary"    
+      nav_panel("Glossary",
+
+      reactableOutput("glossary_table")
    
     ),
 
