@@ -62,7 +62,7 @@ server <- function(input, output) {
 
 })
   
-  output$breeding_legend <- renderReactable({
+  output$dates_table <- renderReactable({
 
     reactable(safe_dates,
 
@@ -92,9 +92,9 @@ ui <- page_navbar(
 
       ),
 
-      nav_panel("Safe dates",
+      nav_panel("Safe/Probable dates",
     
-      card(reactableOutput("breeding_legend"))
+      card(reactableOutput("dates_table"))
 
     ),
 
