@@ -2,6 +2,7 @@ library(shiny)
 library(bslib)
 library(tidyverse)
 library(reactable)
+library(shinyWidgets)
 
 breeding_calendar <- read_csv("inputs/breeding_calendar.csv")
 
@@ -131,6 +132,15 @@ ui <- page_navbar(
 
         p("App developed by Conor Tompkins")
       
+      ),
+
+      nav_panel(
+
+        "Toggles",
+
+        materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
+        materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
+
       )
     )
 
