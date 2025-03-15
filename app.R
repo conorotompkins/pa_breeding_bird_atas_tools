@@ -177,11 +177,11 @@ ui <- page_navbar(
   
   nav_panel(
     
-    "Toggles",
+    "Settings",
     
-    materialSwitch(inputId = "toggle_current_month", label = "Start on current month", value = TRUE),
-    materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
-    materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
+    materialSwitch(inputId = "toggle_current_month", label = "Start on current month", value = TRUE)#,
+    #materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
+    #materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
     
   )
 )
