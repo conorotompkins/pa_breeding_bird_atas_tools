@@ -122,7 +122,11 @@ server <- function(input, output) {
               
               columns = list(
                 
-                common_name = colDef(name = "Common Name"),
+                common_name = colDef("Common Name",
+                                     filterable = TRUE,
+                                     sticky = "left",
+                                     style = list(borderRight = "2px solid #eee"),
+                                     headerStyle = list(borderRight = "1px solid #eee")),
                 safe_date_probable_start = colDef(name = "Probable Start"),
                 safe_date_probable_end = colDef(name = "Probable End"),
                 safe_date_possible_start = colDef(name = "Possible Start"),
