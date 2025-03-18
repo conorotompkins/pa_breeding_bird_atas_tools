@@ -65,9 +65,10 @@ server <- function(input, output) {
   
   current_month <- month(Sys.Date(), label = TRUE, abbr = TRUE) |> as.character()
   
-  breeding_calendar <- eventReactive(input$toggle_current_month, {
+  breeding_calendar <- eventReactive(c(input$toggle_current_month, input$toggle_exclude_na_code), {
     
-    x <- if(input$toggle_current_month) {
+    #filter with input$toggle_current_month
+    x <- if (input$toggle_current_month) {
       
       current_month_index <- year_week_index_df |>
         filter(str_detect(week, current_month)) |>
@@ -79,10 +80,26 @@ server <- function(input, output) {
         filter(year_week_index >= current_month_index) |> 
         select(-year_week_index)
       
-    } else if(input$toggle_current_month == FALSE) {breeding_calendar_long}
+    } else if (input$toggle_current_month == FALSE) {breeding_calendar_long}
     
-    x |>
+    #pivot wider at the end
+    x <- x |>
       pivot_wider(names_from = week, values_from = breeding_calendar_code)
+    
+    #filter with input$toggle_exclude_na_code
+    x <- if (input$toggle_exclude_na_code == TRUE) {
+      
+      first_col <- x |>
+        select(3) |>
+        names() |> 
+        sym()
+      
+      x |>
+        filter(!!first_col != "")
+      
+    }
+    
+    else if (input$toggle_exclude_na_code == FALSE) {x}
     
   })
   
@@ -183,7 +200,8 @@ ui <- page_navbar(
     
     "Settings",
     
-    materialSwitch(inputId = "toggle_current_month", label = "Start on current month", value = TRUE)#,
+    materialSwitch(inputId = "toggle_current_month", label = "Start on current month", value = TRUE),
+    materialSwitch(inputId = "toggle_exclude_na_code", label = "Exclude birds", value = TRUE)
     #materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
     #materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
     
