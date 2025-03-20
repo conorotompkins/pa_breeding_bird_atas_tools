@@ -56,9 +56,24 @@ glossary_col_styles <- map(glossary_cols, breeding_color_formatting)
 
 names(glossary_col_styles) <- glossary_cols
 
+current_date <- Sys.Date()
+
+current_year <- year(current_date)
+
+format_date <- function(x){
+
+  str_c(current_year, "-", x) |> ydm()
+
+}
+
 safe_dates <- read_csv("inputs/bird_safe_dates.csv") |> 
   select(common_name, safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end) |> 
-  arrange(safe_date_probable_start)
+  arrange(safe_date_probable_start) |> 
+  #mutate(safe_date_probable_start = format_date(safe_date_probable_start))
+  arrange(safe_date_probable_start) |> 
+  mutate(across(c(safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end),
+format_date)) |> 
+  rename_with(.fn = ~str_remove(.x, "safe_"), .cols = contains("date"))
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
@@ -144,10 +159,14 @@ server <- function(input, output) {
                                      sticky = "left",
                                      style = list(borderRight = "2px solid #eee"),
                                      headerStyle = list(borderRight = "1px solid #eee")),
-                safe_date_probable_start = colDef(name = "Probable Start"),
-                safe_date_probable_end = colDef(name = "Probable End"),
-                safe_date_possible_start = colDef(name = "Possible Start"),
-                safe_date_possible_end = colDef(name = "Possible End"))
+                date_probable_start = colDef(name = "Probable start",
+                cell = function(value) strftime(value, "%B %e")),
+                date_probable_end = colDef(name = "Probable end",
+                cell = function(value) strftime(value, "%B %e")),
+                date_possible_start = colDef(name = "Possible start",
+                cell = function(value) strftime(value, "%B %e")),
+                date_possible_end = colDef(name = "Possible end",
+                cell = function(value) strftime(value, "%B %e")))
     )
     
   })
@@ -174,7 +193,7 @@ ui <- page_navbar(
     
   ),
   
-  nav_panel("Safe/Probable dates",
+  nav_panel("Safe dates",
             
             card(reactableOutput("dates_table"))
             
