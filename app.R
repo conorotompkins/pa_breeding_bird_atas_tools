@@ -68,12 +68,10 @@ format_date <- function(x){
 
 safe_dates <- read_csv("inputs/bird_safe_dates.csv") |> 
   select(common_name, safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end) |> 
-  arrange(safe_date_probable_start) |> 
-  #mutate(safe_date_probable_start = format_date(safe_date_probable_start))
-  arrange(safe_date_probable_start) |> 
   mutate(across(c(safe_date_probable_start, safe_date_probable_end, safe_date_possible_start, safe_date_possible_end),
 format_date)) |> 
-  rename_with(.fn = ~str_remove(.x, "safe_"), .cols = contains("date"))
+  rename_with(.fn = ~str_remove(.x, "safe_"), .cols = contains("date")) |> 
+  arrange(date_probable_start)
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
