@@ -160,13 +160,13 @@ server <- function(input, output) {
                                      style = list(borderRight = "2px solid #eee"),
                                      headerStyle = list(borderRight = "1px solid #eee")),
                 date_probable_start = colDef(name = "Probable start",
-                cell = function(value) strftime(value, "%B %e")),
+                cell = function(value) strftime(value, "%b %e")),
                 date_probable_end = colDef(name = "Probable end",
-                cell = function(value) strftime(value, "%B %e")),
+                cell = function(value) strftime(value, "%b %e")),
                 date_possible_start = colDef(name = "Possible start",
-                cell = function(value) strftime(value, "%B %e")),
+                cell = function(value) strftime(value, "%b %e")),
                 date_possible_end = colDef(name = "Possible end",
-                cell = function(value) strftime(value, "%B %e")))
+                cell = function(value) strftime(value, "%b %e")))
     )
     
   })
