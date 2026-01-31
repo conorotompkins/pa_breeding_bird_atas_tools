@@ -29,7 +29,7 @@ ui <- page_navbar(
   nav_panel(
     "Block Progress Map",
 
-    card("block_progress_map")
+    card(plotOutput("block_effort_map"))
   ),
 
   nav_panel(
