@@ -24,8 +24,6 @@ glimpse(ebd)
 
 write_delim(ebd, "input/pa_breeding_bird_atlas_processed.txt", delim = "\t")
 
-write_rds(ebd, "input/pa_breeding_bird_atlas_processed.rds")
-
 ebd |> distinct(project_names)
 
 ebd |>
