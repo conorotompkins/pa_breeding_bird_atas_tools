@@ -8,6 +8,7 @@ library(arrow)
 library(geoarrow)
 library(tictoc)
 library(santoku)
+library(mapgl)
 
 ####breeding bird calendar
 breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
@@ -211,10 +212,11 @@ server <- function(input, output) {
   })
 
   #block effort map
-  output$block_effort_map <- renderPlot({
-    block_summary |>
-      ggplot() +
-      geom_sf(aes(fill = confirmed_species)) +
-      scale_fill_viridis_c()
+  output$block_effort_map <- renderMaplibre({
+    maplibre_view(
+      block_summary,
+      column = input$block_variable,
+      legend_positon = "top-right"
+    )
   })
 }

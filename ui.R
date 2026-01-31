@@ -2,6 +2,7 @@ library(shiny)
 library(bslib)
 library(reactable)
 library(shinyWidgets)
+library(mapgl)
 
 ui <- page_navbar(
   fillable_mobile = TRUE,
@@ -29,7 +30,17 @@ ui <- page_navbar(
   nav_panel(
     "Block Progress Map",
 
-    card(plotOutput("block_effort_map"))
+    card(
+      radioGroupButtons(
+        inputId = "block_variable",
+        label = "Variable",
+        choices = c(
+          "Effort hours" = "duration_hours",
+          "Confirmed species" = "confirmed_species"
+        )
+      ),
+      maplibreOutput("block_effort_map")
+    )
   ),
 
   nav_panel(
@@ -70,7 +81,7 @@ ui <- page_navbar(
       ),
       accordion_panel(
         value = "accordion_map",
-        title = "Block map",
+        title = "Block map"
       )
     ),
   )
