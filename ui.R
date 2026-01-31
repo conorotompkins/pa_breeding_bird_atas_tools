@@ -7,7 +7,7 @@ library(mapgl)
 ui <- page_navbar(
   fillable_mobile = TRUE,
 
-  title = "Third Pennsylvania Bird Atlas web app",
+  title = "Third Pennsylvania Bird Atlas Tools",
 
   nav_panel(
     "Breeding Calendar",
