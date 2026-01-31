@@ -46,7 +46,7 @@ ui <- page_navbar(
   nav_panel(
     "Block Progress Table",
 
-    card("block_progress_table")
+    card("Placeholder for interactive table")
   ),
 
   nav_panel(

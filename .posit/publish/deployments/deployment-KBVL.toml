@@ -11,8 +11,8 @@ id = '019c15fc-5025-6d7c-3432-6474a12c845c'
 dashboard_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c'
 direct_url = 'https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history'
-deployed_at = '2026-01-31T16:53:27-05:00'
-bundle_id = '019c160b-ee41-87a2-9b2d-230bfc14f6d6'
+deployed_at = '2026-01-31T17:07:45-05:00'
+bundle_id = '019c1619-05f3-697e-e6cc-9d05dcfa0109'
 files = [
   '.posit/publish/PBA3 Tools-HJG8.toml',
   '.posit/publish/deployments/deployment-KBVL.toml',
