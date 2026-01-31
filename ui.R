@@ -6,22 +6,22 @@ library(shinyWidgets)
 ui <- page_navbar(
   fillable_mobile = TRUE,
 
-  title = "Breeding Bird Calendar",
+  title = "Third Pennsylvania Bird Atlas web app",
 
   nav_panel(
-    "Calendar",
+    "Breeding Calendar",
 
     card(reactableOutput(outputId = "calendar"))
   ),
 
   nav_panel(
-    "Safe dates",
+    "Breeding Safe Dates",
 
     card(reactableOutput("dates_table"))
   ),
 
   nav_panel(
-    "Glossary",
+    "Breeding Code Glossary",
 
     reactableOutput("glossary_table")
   ),
@@ -31,7 +31,7 @@ ui <- page_navbar(
 
     tags$a(
       href = "https://ebird.org/atlaspa/home",
-      "Pennsylvania Bird Atlas 3",
+      "Third Pennsylvania Bird Atlas",
       target = "_blank"
     ),
 
@@ -48,10 +48,8 @@ ui <- page_navbar(
     ),
     materialSwitch(
       inputId = "toggle_exclude_na_code",
-      label = "Exclude birds",
+      label = "Exclude birds with no code in first month",
       value = TRUE
     )
-    #materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
-    #materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
   )
 )
