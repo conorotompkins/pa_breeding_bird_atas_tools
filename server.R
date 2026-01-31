@@ -4,7 +4,7 @@ library(tidyverse)
 library(reactable)
 library(shinyWidgets)
 
-breeding_calendar_raw <- read_csv("inputs/breeding_calendar.csv")
+breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
 
 breeding_calendar_long <- breeding_calendar_raw |>
   mutate(across(everything(), \(x) replace_na(x, ""))) |>
@@ -69,7 +69,7 @@ format_date <- function(x) {
   str_c(current_year, "-", x) |> ydm()
 }
 
-safe_dates <- read_csv("inputs/bird_safe_dates.csv") |>
+safe_dates <- read_csv("input/bird_safe_dates.csv") |>
   select(
     common_name,
     safe_date_probable_start,

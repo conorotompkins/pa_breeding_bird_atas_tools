@@ -1,7 +1,7 @@
 #clean up Excel table, save to /inputs
 library(tidyverse)
 
-birds <- read_csv("inputs/pa_breeding_bird_calendar_2025_02.csv")
+birds <- read_csv("input/pa_breeding_bird_calendar_2025_02.csv")
 
 birds
 
@@ -37,6 +37,6 @@ breeding_calendar <- birds |>
   select(-contains("safe")) |>
   mutate(across(all_of(month_cols), \(x) replace_na(x, "")))
 
-write_csv(breeding_calendar, "inputs/breeding_calendar.csv")
+write_csv(breeding_calendar, "input/breeding_calendar.csv")
 
-write_csv(bird_safe_dates, "inputs/bird_safe_dates.csv")
+write_csv(bird_safe_dates, "input/bird_safe_dates.csv")
