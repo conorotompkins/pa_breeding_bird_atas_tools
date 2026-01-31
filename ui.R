@@ -27,6 +27,18 @@ ui <- page_navbar(
   ),
 
   nav_panel(
+    "Block Progress Map",
+
+    card("block_progress_map")
+  ),
+
+  nav_panel(
+    "Block Progress Table",
+
+    card("block_progress_table")
+  ),
+
+  nav_panel(
     "About",
 
     tags$a(
@@ -41,15 +53,25 @@ ui <- page_navbar(
   nav_panel(
     "Settings",
 
-    materialSwitch(
-      inputId = "toggle_current_month",
-      label = "Start on current month",
-      value = TRUE
+    accordion(
+      accordion_panel(
+        value = "accordion_calendar",
+        title = "Calendar",
+        materialSwitch(
+          inputId = "toggle_current_month",
+          label = "Start on current month",
+          value = TRUE
+        ),
+        materialSwitch(
+          inputId = "toggle_exclude_na_code",
+          label = "Exclude birds with no code in first month",
+          value = TRUE
+        )
+      ),
+      accordion_panel(
+        value = "accordion_map",
+        title = "Block map",
+      )
     ),
-    materialSwitch(
-      inputId = "toggle_exclude_na_code",
-      label = "Exclude birds with no code in first month",
-      value = TRUE
-    )
   )
 )
