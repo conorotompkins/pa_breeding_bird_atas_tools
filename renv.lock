@@ -634,6 +634,31 @@
       ],
       "Hash": "836a795cf18aef417f6d3bf090c15875"
     },
+    "geojsonsf": {
+      "Package": "geojsonsf",
+      "Version": "2.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "geometries",
+        "jsonify",
+        "rapidjsonr",
+        "sfheaders"
+      ],
+      "Hash": "8d077646c6713838233e8710910ef92e"
+    },
+    "geometries": {
+      "Package": "geometries",
+      "Version": "0.2.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Rcpp"
+      ],
+      "Hash": "a722b946e99fd7a006ab1239c0d1b2bc"
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.5.1",
@@ -878,6 +903,18 @@
       ],
       "Hash": "5aab57a3bd297eee1c1d862735972182"
     },
+    "jsonify": {
+      "Package": "jsonify",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "rapidjsonr"
+      ],
+      "Hash": "49a9775e4f8c96c654b6018739067055"
+    },
     "jsonlite": {
       "Package": "jsonlite",
       "Version": "2.0.0",
@@ -976,6 +1013,27 @@
         "R"
       ],
       "Hash": "8b3b213aa0c54a0dec254288ccb545d1"
+    },
+    "mapgl": {
+      "Package": "mapgl",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "base64enc",
+        "classInt",
+        "geojsonsf",
+        "grDevices",
+        "htmltools",
+        "htmlwidgets",
+        "rlang",
+        "sf",
+        "shiny",
+        "terra",
+        "viridisLite"
+      ],
+      "Hash": "ffab8d19a34f15b424f6bc90093309a6"
     },
     "memoise": {
       "Package": "memoise",
@@ -1202,6 +1260,13 @@
         "textshaping"
       ],
       "Hash": "0595fe5e47357111f29ad19101c7d271"
+    },
+    "rapidjsonr": {
+      "Package": "rapidjsonr",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "88b9f48c93d17cdb811b54079a6a414f"
     },
     "rappdirs": {
       "Package": "rappdirs",
@@ -1483,6 +1548,18 @@
       ],
       "Hash": "ce0c8d7dc7715a383d874eb5be01edd5"
     },
+    "sfheaders": {
+      "Package": "sfheaders",
+      "Version": "0.4.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "geometries"
+      ],
+      "Hash": "d63e904c63deda45f3f9149c7dcf8703"
+    },
     "shiny": {
       "Package": "shiny",
       "Version": "1.9.1",
@@ -1591,6 +1668,18 @@
         "lifecycle"
       ],
       "Hash": "213b6b8ed5afbf934843e6c3b090d418"
+    },
+    "terra": {
+      "Package": "terra",
+      "Version": "1.8-86",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods"
+      ],
+      "Hash": "1cc3e57b7ea625c7ef5c814f75bd087a"
     },
     "textshaping": {
       "Package": "textshaping",
