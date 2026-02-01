@@ -11,13 +11,13 @@ id = '019c15fc-5025-6d7c-3432-6474a12c845c'
 dashboard_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c'
 direct_url = 'https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history'
-deployed_at = '2026-01-31T17:07:45-05:00'
-bundle_id = '019c1619-05f3-697e-e6cc-9d05dcfa0109'
+deployed_at = '2026-02-01T14:48:05-05:00'
+bundle_id = '019c1abf-8569-935f-a764-9f75922897a0'
 files = [
   '.posit/publish/PBA3 Tools-HJG8.toml',
   '.posit/publish/deployments/deployment-KBVL.toml',
   'input/bird_safe_dates.csv',
-  'input/block_summary.parquet',
+  'input/block_summary_seasons.parquet',
   'input/breeding_calendar.csv',
   'renv.lock',
   'server.R',
@@ -41,7 +41,8 @@ files = [
   '/ui.R',
   '/input/bird_safe_dates.csv',
   '/input/block_summary.parquet',
-  '/input/breeding_calendar.csv'
+  '/input/breeding_calendar.csv',
+  '/input/block_summary_seasons.parquet'
 ]
 title = 'PBA3 Tools'
 
