@@ -3,8 +3,15 @@ library(bslib)
 library(tidyverse)
 library(reactable)
 library(shinyWidgets)
+library(sf)
+library(arrow)
+library(geoarrow)
+library(tictoc)
+library(santoku)
+library(mapgl)
 
-breeding_calendar_raw <- read_csv("inputs/breeding_calendar.csv")
+####breeding bird calendar
+breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
 
 breeding_calendar_long <- breeding_calendar_raw |>
   mutate(across(everything(), \(x) replace_na(x, ""))) |>
@@ -69,7 +76,7 @@ format_date <- function(x) {
   str_c(current_year, "-", x) |> ydm()
 }
 
-safe_dates <- read_csv("inputs/bird_safe_dates.csv") |>
+safe_dates <- read_csv("input/bird_safe_dates.csv") |>
   select(
     common_name,
     safe_date_probable_start,
@@ -88,6 +95,13 @@ safe_dates <- read_csv("inputs/bird_safe_dates.csv") |>
   )) |>
   rename_with(.fn = ~ str_remove(.x, "safe_"), .cols = contains("date")) |>
   arrange(date_probable_start)
+
+####block effort
+block_summary <- read_parquet(
+  "input/block_summary.parquet",
+  as_data_frame = FALSE
+) |>
+  st_as_sf()
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
@@ -196,59 +210,13 @@ server <- function(input, output) {
     glossary_table |>
       reactable(columns = glossary_col_styles)
   })
-}
 
-ui <- page_navbar(
-  fillable_mobile = TRUE,
-
-  title = "Breeding Bird Calendar",
-
-  nav_panel(
-    "Calendar",
-
-    card(reactableOutput(outputId = "calendar"))
-  ),
-
-  nav_panel(
-    "Safe dates",
-
-    card(reactableOutput("dates_table"))
-  ),
-
-  nav_panel(
-    "Glossary",
-
-    reactableOutput("glossary_table")
-  ),
-
-  nav_panel(
-    "About",
-
-    tags$a(
-      href = "https://ebird.org/atlaspa/home",
-      "Pennsylvania Bird Atlas 3",
-      target = "_blank"
-    ),
-
-    p("App developed by Conor Tompkins")
-  ),
-
-  nav_panel(
-    "Settings",
-
-    materialSwitch(
-      inputId = "toggle_current_month",
-      label = "Start on current month",
-      value = TRUE
-    ),
-    materialSwitch(
-      inputId = "toggle_exclude_na_code",
-      label = "Exclude birds",
-      value = TRUE
+  #block effort map
+  output$block_effort_map <- renderMaplibre({
+    maplibre_view(
+      block_summary,
+      column = input$block_variable,
+      legend_positon = "top-right"
     )
-    #materialSwitch(inputId = "toggle_safe", label = "Safe", value = TRUE),
-    #materialSwitch(inputId = "toggle_probable", label = "Probable", value = FALSE)
-  )
-)
-
-shinyApp(ui = ui, server = server)
+  })
+}
