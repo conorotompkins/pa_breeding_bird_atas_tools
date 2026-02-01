@@ -52,11 +52,11 @@ ui <- page_navbar(
     maplibreOutput("block_effort_map")
   ),
 
-  nav_panel(
-    "Block Progress Table",
+  # nav_panel(
+  #   "Block Progress Table",
 
-    card("Placeholder for interactive table")
-  ),
+  #   card("Placeholder for interactive table")
+  # ),
 
   nav_panel(
     "About",
