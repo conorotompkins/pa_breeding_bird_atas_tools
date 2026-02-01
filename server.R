@@ -98,7 +98,7 @@ safe_dates <- read_csv("input/bird_safe_dates.csv") |>
 
 ####block effort
 block_summary <- read_parquet(
-  "input/block_summary.parquet",
+  "input/block_summary_seasons.parquet",
   as_data_frame = FALSE
 ) |>
   st_as_sf()
@@ -213,6 +213,9 @@ server <- function(input, output) {
 
   #block effort map
   output$block_effort_map <- renderMaplibre({
+    block_summary <- block_summary |>
+      filter(season == input$season_variable)
+
     maplibre_view(
       block_summary,
       column = input$block_variable,
