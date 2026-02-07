@@ -222,4 +222,14 @@ server <- function(input, output) {
       legend_positon = "top-right"
     )
   })
+
+  output$block_completion_table <- renderReactable({
+    block_summary |>
+      st_drop_geometry() |>
+      filter(season == input$season_variable_table) |>
+      reactable(
+        columns = list(BLOCK_ID = colDef(filterable = TRUE)),
+        filterable = TRUE
+      )
+  })
 }

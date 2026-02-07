@@ -52,11 +52,20 @@ ui <- page_navbar(
     maplibreOutput("block_effort_map")
   ),
 
-  # nav_panel(
-  #   "Block Progress Table",
+  nav_panel(
+    "Block Progress Table",
 
-  #   card("Placeholder for interactive table")
-  # ),
+    radioGroupButtons(
+      inputId = "season_variable_table",
+      label = "Season",
+      choices = c(
+        "All seasons" = "All seasons",
+        "Breeding" = "Breeding",
+        "Winter" = "Winter"
+      )
+    ),
+    reactableOutput("block_completion_table")
+  ),
 
   nav_panel(
     "About",
