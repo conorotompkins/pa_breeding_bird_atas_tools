@@ -36,7 +36,7 @@ ui <- page_navbar(
         label = "Variable",
         choices = c(
           "Effort hours" = "duration_hours",
-          "Confirmed species" = "confirmed_species"
+          "Confirmed species" = "Confirmed"
         )
       ),
       radioGroupButtons(

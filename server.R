@@ -226,9 +226,9 @@ server <- function(input, output) {
   output$block_completion_table <- renderReactable({
     block_summary |>
       st_drop_geometry() |>
+      select(-BLOCK_ID) |>
       filter(season == input$season_variable_table) |>
       reactable(
-        columns = list(BLOCK_ID = colDef(filterable = TRUE)),
         filterable = TRUE
       )
   })
