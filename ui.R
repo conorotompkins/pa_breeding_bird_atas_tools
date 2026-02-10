@@ -32,20 +32,20 @@ ui <- page_navbar(
 
     layout_columns(
       radioGroupButtons(
-        inputId = "block_variable",
-        label = "Variable",
-        choices = c(
-          "Effort hours" = "duration_hours",
-          "Confirmed species" = "Confirmed"
-        )
-      ),
-      radioGroupButtons(
         inputId = "season_variable",
         label = "Season",
         choices = c(
           "All seasons" = "All seasons",
           "Breeding" = "Breeding",
           "Winter" = "Winter"
+        )
+      ),
+      radioGroupButtons(
+        inputId = "block_variable",
+        label = "Variable",
+        choices = c(
+          "Effort hours" = "duration_hours",
+          "Confirmed species" = "Confirmed"
         )
       )
     ),
