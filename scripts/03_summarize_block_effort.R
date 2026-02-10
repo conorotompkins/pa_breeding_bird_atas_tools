@@ -47,12 +47,38 @@ st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
   glimpse()
 
 atlas_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
-  select(NAME) |>
-  rename(BLOCK_ID = NAME) |>
-  group_by(BLOCK_ID) |>
-  summarize()
+  st_drop_geometry() |>
+  as_tibble()
+
+atlas_blocks |>
+  count(NAME) |>
+  filter(n > 1)
+
+atlas_blocks |>
+  count(BLOCK_ID) |>
+  filter(n > 1)
+
+atlas_blocks |>
+  filter(NAME == "42080145") |>
+  select(1:15)
+
+atlas_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
+  select(BLOCK_ID)
 
 glimpse(atlas_blocks)
+
+maplibre(bounds = atlas_blocks) |>
+  add_fill_layer(
+    source = atlas_blocks,
+    id = "blocks",
+    fill_opacity = .2,
+    tooltip = "BLOCK_ID"
+  ) |>
+  add_symbol_layer(
+    source = atlas_blocks,
+    id = "block_labels",
+    text_field = get_column("BLOCK_ID")
+  )
 
 checklist_block <- ebd_df |>
   distinct(atlas_block, checklist_id, longitude, latitude) |>
@@ -72,7 +98,7 @@ atlas_3_centroids <- checklist_block |>
   #filter(atlas_block == "40080D1SE") |>
   drop_na(atlas_block) |>
   group_by(atlas_block) |>
-  slice_sample(n = 400) |>
+  slice_sample(n = 1000) |>
   summarize() |>
   st_convex_hull() |>
   st_point_on_surface()
@@ -92,6 +118,17 @@ block_checklist_geo <- st_join(
 )
 toc()
 
+block_checklist_geo <- block_checklist_geo |>
+  mutate(
+    BLOCK_ID = case_when(
+      atlas_block == "40075F2SE" ~ 4932,
+      .default = BLOCK_ID
+    ),
+  )
+
+block_checklist_geo |>
+  filter(atlas_block == "40075F2SE" | atlas_block == "40075F2SW")
+
 glimpse(block_checklist_geo)
 
 block_checklist_geo |>
@@ -107,36 +144,59 @@ block_checklist_geo |>
   count(BLOCK_ID, sort = TRUE)
 
 atlas_block_mismatch <- block_checklist_geo |>
-  filter(BLOCK_ID == "42080145") |>
+  filter(BLOCK_ID == 4932) |>
   distinct(BLOCK_ID, atlas_block)
 
 atlas_block_mismatch
 
-maplibre(bounds = atlas_blocks) |>
+block_checklist_geo |>
+  filter(is.na(atlas_block))
+
+maplibre(
+  bounds = atlas_blocks |>
+    filter(BLOCK_ID == 4932)
+) |>
+  # add_symbol_layer(
+  #   id = "pba2_blocks",
+  #   source = atlas_blocks,
+  #   text_field = get_column("BLOCK_ID")
+  # ) |>
   add_fill_layer(
+    id = "pba2_blocks",
     source = atlas_blocks,
-    id = "blocks",
+    fill_color = "blue",
     fill_opacity = .2,
     tooltip = "BLOCK_ID"
   ) |>
-  add_symbol_layer(
-    source = atlas_blocks,
-    id = "block_labels",
-    text_field = get_column("BLOCK_ID")
+  add_circle_layer(
+    id = "pba3_centroids",
+    source = atlas_3_centroids,
+    circle_radius = 6,
+    circle_color = "red",
+    tooltip = "atlas_block"
+  ) |>
+  add_circle_layer(
+    id = "checklists",
+    source = checklist_block |>
+      filter(atlas_block == "40075F2SE"),
+    circle_radius = 4 #,
+    #tooltip = "atlas_block"
   )
 
-atlas_blocks |>
-  st_drop_geometry() |>
-  count(BLOCK_ID) |>
-  filter(n > 1)
-
+checklist_block |>
+  semi_join(atlas_block_mismatch, by = "atlas_block") |>
+  maplibre_view()
 
 ggplot() +
   geom_sf(
-    data = semi_join(atlas_blocks, atlas_block_mismatch)
+    data = semi_join(atlas_blocks, atlas_block_mismatch, by = "BLOCK_ID")
   ) +
   geom_sf(
-    data = semi_join(checklist_block, atlas_block_mismatch)
+    data = semi_join(
+      checklist_block,
+      atlas_block_mismatch,
+      by = "atlas_block"
+    )
   )
 
 maplibre(bounds = semi_join(atlas_blocks, atlas_block_mismatch)) |>
@@ -153,7 +213,11 @@ maplibre(bounds = semi_join(atlas_blocks, atlas_block_mismatch)) |>
   ) |>
   add_circle_layer(
     id = "coords",
-    source = semi_join(checklist_block, atlas_block_mismatch),
+    source = semi_join(
+      atlas_3_centroids,
+      atlas_block_mismatch,
+      by = "atlas_block"
+    ),
     tooltip = c("atlas_block")
   )
 
@@ -266,11 +330,29 @@ season_summaries |> str(max.level = 1)
 
 block_summary_seasons <- list_rbind(season_summaries, names_to = "season")
 
+block_checklist_geo |>
+  st_drop_geometry() |>
+  count(atlas_block) |>
+  as_tibble() |>
+  filter(n > 1)
+
 block_summary_seasons <- left_join(
   block_checklist_geo,
   block_summary_seasons,
   by = "atlas_block"
 )
+
+block_checklist_geo |>
+  filter(row_number() == 2)
+
+block_summary_seasons |>
+  filter(atlas_block == "42080A1CW")
+
+block_summary_seasons |>
+  filter(row_number() == 1951)
+
+block_checklist_geo |>
+  filter(atlas_block == "40076C2NW")
 
 block_summary_seasons |>
   slice_head(n = 1)
