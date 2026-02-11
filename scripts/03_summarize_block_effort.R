@@ -6,6 +6,10 @@ library(geoarrow)
 library(tictoc)
 library(mapgl)
 
+options(scipen = 999, digits = 4)
+
+theme_set(theme_bw())
+
 #checklists
 tic()
 output_file <- "input/pa_breeding_bird_atlas_processed.txt"
@@ -13,7 +17,10 @@ output_file <- "input/pa_breeding_bird_atlas_processed.txt"
 ebd_df <- read_delim(output_file, delim = "\t") |>
   mutate(across(breeding_code, str_squish)) |>
   mutate(breeding_category = coalesce(breeding_category, "C1")) |>
-  mutate(observation_month = month(observation_date, label = TRUE, abbr = TRUE))
+  mutate(
+    observation_month = month(observation_date, label = TRUE, abbr = TRUE)
+  ) |>
+  rename(pba3_block = atlas_block)
 toc()
 
 glimpse(ebd_df)
@@ -34,85 +41,78 @@ ebd_df <- left_join(ebd_df, breeding_lookup, by = "breeding_category")
 
 glimpse(ebd_df)
 
-ebd_df |>
-  filter(is.na(atlas_block)) |>
-  distinct(checklist_id, observation_date, longitude, latitude) |>
-  mutate(observation_date = as.character(observation_date)) |>
-  st_as_sf(coords = c("longitude", "latitude"), crs = "NAD83") |>
-  maplibre_view()
+# ebd_df |>
+#   filter(is.na(pba3_block)) |>
+#   distinct(checklist_id, observation_date, longitude, latitude) |>
+#   mutate(observation_date = as.character(observation_date)) |>
+#   st_as_sf(coords = c("longitude", "latitude"), crs = "NAD83") |>
+#   maplibre_view()
 
 #block map
-#BLOCK_ID 42080145 is duplicated
 st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
   glimpse()
 
-atlas_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
+pba2_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
+  select(BLOCK_ID) |>
+  rename(pba2_block = BLOCK_ID)
+
+glimpse(pba2_blocks)
+
+pba2_blocks |>
   st_drop_geometry() |>
-  as_tibble()
+  count(pba2_block) |>
+  filter(n > 1) |>
+  nrow() ==
+  0
 
-atlas_blocks |>
-  count(NAME) |>
-  filter(n > 1)
-
-atlas_blocks |>
-  count(BLOCK_ID) |>
-  filter(n > 1)
-
-atlas_blocks |>
-  filter(NAME == "42080145") |>
-  select(1:15)
-
-atlas_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
-  select(BLOCK_ID)
-
-glimpse(atlas_blocks)
-
-maplibre(bounds = atlas_blocks) |>
+maplibre(bounds = pba2_blocks) |>
   add_fill_layer(
-    source = atlas_blocks,
+    source = pba2_blocks,
     id = "blocks",
     fill_opacity = .2,
-    tooltip = "BLOCK_ID"
+    tooltip = "pba2_block"
   ) |>
   add_symbol_layer(
-    source = atlas_blocks,
+    source = pba2_blocks,
     id = "block_labels",
-    text_field = get_column("BLOCK_ID")
+    text_field = get_column("pba2_block")
   )
 
-checklist_block <- ebd_df |>
-  distinct(atlas_block, checklist_id, longitude, latitude) |>
+#distinct of checklist coordinates and pba3_block
+checklist_pba3_block <- ebd_df |>
+  distinct(pba3_block, checklist_id, longitude, latitude) |>
   st_as_sf(coords = c("longitude", "latitude"))
 
-st_crs(checklist_block) <- st_crs(atlas_blocks)
+st_crs(checklist_pba3_block) <- st_crs(pba2_blocks)
 
-checklist_block |>
+checklist_pba3_block |>
   st_drop_geometry() |>
   as_tibble() |>
-  count(atlas_block) |>
+  count(pba3_block) |>
   ggplot(aes(n)) +
   geom_histogram() +
   geom_vline(xintercept = 400)
 
-atlas_3_centroids <- checklist_block |>
-  #filter(atlas_block == "40080D1SE") |>
-  drop_na(atlas_block) |>
-  group_by(atlas_block) |>
+#calculate centroid of all checklist coordinates in each pba3_block
+pba3_centroids <- checklist_pba3_block |>
+  drop_na(pba3_block) |>
+  group_by(pba3_block) |>
   slice_sample(n = 1000) |>
   summarize() |>
   st_convex_hull() |>
   st_point_on_surface()
 
-atlas_3_centroids
+pba3_centroids
 
-atlas_3_centroids |>
+pba3_centroids |>
   ggplot() +
-  geom_sf()
+  geom_sf(size = .5)
 
+#join pba2 blocks with pba3 centroids
 tic()
 block_checklist_geo <- st_join(
-  atlas_blocks,
-  atlas_3_centroids,
+  pba2_blocks,
+  pba3_centroids,
   join = st_covers,
   largest = FALSE
 )
@@ -120,108 +120,114 @@ toc()
 
 block_checklist_geo <- block_checklist_geo |>
   mutate(
-    BLOCK_ID = case_when(
-      atlas_block == "40075F2SE" ~ 4932,
-      .default = BLOCK_ID
+    pba2_block = case_when(
+      pba3_block == "40075F2SE" ~ 4932,
+      .default = pba2_block
     ),
-  )
+  ) |>
+  filter(!(pba2_block == 4932 & is.na(pba3_block)))
 
 block_checklist_geo |>
-  filter(atlas_block == "40075F2SE" | atlas_block == "40075F2SW")
+  filter(pba3_block == "40075F2SE" | pba3_block == "40075F2SW")
 
 glimpse(block_checklist_geo)
 
-block_checklist_geo |>
-  st_drop_geometry() |>
-  as_tibble() |>
-  distinct(atlas_block, BLOCK_ID) |>
-  count(atlas_block, sort = TRUE)
+# block_checklist_geo |>
+#   st_drop_geometry() |>
+#   as_tibble() |>
+#   distinct(pba3_block, pba2_block) |>
+#   count(pba3_block, sort = TRUE)
 
-block_checklist_geo |>
-  st_drop_geometry() |>
-  as_tibble() |>
-  distinct(atlas_block, BLOCK_ID) |>
-  count(BLOCK_ID, sort = TRUE)
+# block_checklist_geo |>
+#   st_drop_geometry() |>
+#   as_tibble() |>
+#   distinct(pba3_block, pba2_block) |>
+#   count(pba2_block, sort = TRUE)
 
-atlas_block_mismatch <- block_checklist_geo |>
-  filter(BLOCK_ID == 4932) |>
-  distinct(BLOCK_ID, atlas_block)
+# pba2_blocks |>
+#   filter(pba2_block == 4932) |>
+#   st_drop_geometry() |>
+#   as_tibble()
 
-atlas_block_mismatch
+# block_checklist_geo |>
+#   filter(pba2_block == 4932) |>
+#   st_drop_geometry() |>
+#   as_tibble()
 
-block_checklist_geo |>
-  filter(is.na(atlas_block))
+# block_checklist_geo |>
+#   filter(pba2_block == 4932) |>
+#   maplibre_view()
 
-maplibre(
-  bounds = atlas_blocks |>
-    filter(BLOCK_ID == 4932)
-) |>
-  # add_symbol_layer(
-  #   id = "pba2_blocks",
-  #   source = atlas_blocks,
-  #   text_field = get_column("BLOCK_ID")
-  # ) |>
-  add_fill_layer(
-    id = "pba2_blocks",
-    source = atlas_blocks,
-    fill_color = "blue",
-    fill_opacity = .2,
-    tooltip = "BLOCK_ID"
-  ) |>
-  add_circle_layer(
-    id = "pba3_centroids",
-    source = atlas_3_centroids,
-    circle_radius = 6,
-    circle_color = "red",
-    tooltip = "atlas_block"
-  ) |>
-  add_circle_layer(
-    id = "checklists",
-    source = checklist_block |>
-      filter(atlas_block == "40075F2SE"),
-    circle_radius = 4 #,
-    #tooltip = "atlas_block"
-  )
+# pba3_block_mismatch <- block_checklist_geo |>
+#   filter(pba2_block == 3670) |>
+#   distinct(pba2_block, pba3_block)
 
-checklist_block |>
-  semi_join(atlas_block_mismatch, by = "atlas_block") |>
-  maplibre_view()
+# pba3_block_mismatch
 
-ggplot() +
-  geom_sf(
-    data = semi_join(atlas_blocks, atlas_block_mismatch, by = "BLOCK_ID")
-  ) +
-  geom_sf(
-    data = semi_join(
-      checklist_block,
-      atlas_block_mismatch,
-      by = "atlas_block"
-    )
-  )
+# maplibre(
+#   bounds = pba2_blocks |>
+#     filter(pba2_block == 3670)
+# ) |>
+#   add_fill_layer(
+#     id = "pba2_blocks",
+#     source = pba2_blocks,
+#     fill_color = "blue",
+#     fill_opacity = .2,
+#     tooltip = "pba2_block"
+#   ) |>
+#   add_circle_layer(
+#     id = "pba3_centroids",
+#     source = pba3_centroids,
+#     circle_radius = 6,
+#     circle_color = "red",
+#     tooltip = "pba3_block"
+#   ) |>
+#   add_circle_layer(
+#     id = "checklists",
+#     source = checklist_block |>
+#       filter(pba3_block == "40075F2SE"),
+#     circle_radius = 4
+#   )
 
-maplibre(bounds = semi_join(atlas_blocks, atlas_block_mismatch)) |>
-  add_fill_layer(
-    source = semi_join(atlas_blocks, atlas_block_mismatch),
-    id = "blocks",
-    fill_opacity = .2,
-    tooltip = "BLOCK_ID"
-  ) |>
-  add_symbol_layer(
-    source = semi_join(atlas_blocks, atlas_block_mismatch),
-    id = "block_labels",
-    text_field = get_column("BLOCK_ID")
-  ) |>
-  add_circle_layer(
-    id = "coords",
-    source = semi_join(
-      atlas_3_centroids,
-      atlas_block_mismatch,
-      by = "atlas_block"
-    ),
-    tooltip = c("atlas_block")
-  )
+# checklist_block |>
+#   semi_join(pba3_block_mismatch, by = "pba3_block") |>
+#   maplibre_view()
 
-#map checklist coords from a single atlas_block on top of a BLOCK_ID square
+# ggplot() +
+#   geom_sf(
+#     data = semi_join(pba2_blocks, pba3_block_mismatch, by = "pba2_block")
+#   ) +
+#   geom_sf(
+#     data = semi_join(
+#       checklist_block,
+#       pba3_block_mismatch,
+#       by = "pba3_block"
+#     )
+#   )
+
+# maplibre(bounds = semi_join(pba2_blocks, pba3_block_mismatch)) |>
+#   add_fill_layer(
+#     source = semi_join(pba2_blocks, pba3_block_mismatch),
+#     id = "blocks",
+#     fill_opacity = .2,
+#     tooltip = "pba2_block"
+#   ) |>
+#   add_symbol_layer(
+#     source = semi_join(pba2_blocks, pba3_block_mismatch),
+#     id = "block_labels",
+#     text_field = get_column("pba2_block")
+#   ) |>
+#   add_circle_layer(
+#     id = "coords",
+#     source = semi_join(
+#       pba3_centroids,
+#       pba3_block_mismatch,
+#       by = "pba3_block"
+#     ),
+#     tooltip = c("pba3_block")
+#   )
+
+#map checklist coords from a single pba3_block on top of a BLOCK_ID square
 
 #seasons
 seasons <- tibble(
@@ -242,7 +248,7 @@ summarize_season <- function(
   block_df,
   seasons_df = seasons,
   season_filter,
-  atlas_blocks_data = atlas_blocks
+  pba2_block_data = pba2_blocks
 ) {
   seasons_df <- seasons_df |>
     filter(season == season_filter)
@@ -254,7 +260,7 @@ summarize_season <- function(
     )
 
   # block_summary <- checklist_df |>
-  #   group_by(atlas_block) |>
+  #   group_by(pba3_block) |>
   #   summarize(
   #     checklist_count = n_distinct(checklist_id),
   #     species_observed = n_distinct(common_name),
@@ -265,32 +271,32 @@ summarize_season <- function(
   #   ungroup()
 
   block_checklist_count <- checklist_df |>
-    distinct(atlas_block, checklist_id) |>
-    summarize(checklist_count = n_distinct(checklist_id), .by = atlas_block)
+    distinct(pba3_block, checklist_id) |>
+    summarize(checklist_count = n_distinct(checklist_id), .by = pba3_block)
 
   block_species_observed <- checklist_df |>
-    select(atlas_block, common_name) |>
+    select(pba3_block, common_name) |>
     distinct() |>
-    summarize(species_observed = n_distinct(common_name), .by = atlas_block)
+    summarize(species_observed = n_distinct(common_name), .by = pba3_block)
 
   block_birders <- checklist_df |>
-    distinct(atlas_block, observer_id) |>
-    summarize(birders = n_distinct(observer_id), .by = atlas_block)
+    distinct(pba3_block, observer_id) |>
+    summarize(birders = n_distinct(observer_id), .by = pba3_block)
 
   block_effort <- checklist_df |>
-    distinct(atlas_block, checklist_id, duration_minutes, effort_distance_km) |>
+    distinct(pba3_block, checklist_id, duration_minutes, effort_distance_km) |>
     summarize(
       duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
       effort_distance_km = sum(effort_distance_km, na.rm = TRUE),
-      .by = atlas_block
+      .by = pba3_block
     )
 
   block_species_coded <- checklist_df |>
-    distinct(atlas_block, common_name, breeding_category_desc, breeding_rank) |>
-    group_by(atlas_block, common_name) |>
+    distinct(pba3_block, common_name, breeding_category_desc, breeding_rank) |>
+    group_by(pba3_block, common_name) |>
     filter(breeding_rank == max(breeding_rank)) |>
     ungroup() |>
-    count(atlas_block, breeding_category_desc, breeding_rank) |>
+    count(pba3_block, breeding_category_desc, breeding_rank) |>
     select(-breeding_rank) |>
     pivot_wider(names_from = breeding_category_desc, values_from = n)
 
@@ -302,7 +308,7 @@ summarize_season <- function(
     block_species_coded
   )
 
-  block_summary <- reduce(df_list, left_join, by = "atlas_block")
+  block_summary <- reduce(df_list, left_join, by = "pba3_block")
 
   block_summary
 }
@@ -314,8 +320,8 @@ x <- summarize_season(
 )
 
 x |>
-  filter(atlas_block == "40080D1SE") |>
-  view()
+  filter(pba3_block == "40080D1SE") |>
+  glimpse()
 
 season_summaries <- map(
   set_names(c("All seasons", "Breeding", "Winter")),
@@ -332,30 +338,30 @@ block_summary_seasons <- list_rbind(season_summaries, names_to = "season")
 
 block_checklist_geo |>
   st_drop_geometry() |>
-  count(atlas_block) |>
+  count(pba3_block) |>
   as_tibble() |>
   filter(n > 1)
 
 block_summary_seasons <- left_join(
   block_checklist_geo,
   block_summary_seasons,
-  by = "atlas_block"
+  by = "pba3_block"
 )
 
-block_checklist_geo |>
-  filter(row_number() == 2)
+# block_checklist_geo |>
+#   filter(row_number() == 2)
 
-block_summary_seasons |>
-  filter(atlas_block == "42080A1CW")
+# block_summary_seasons |>
+#   filter(pba3_block == "42080A1CW")
 
-block_summary_seasons |>
-  filter(row_number() == 1951)
+# block_summary_seasons |>
+#   filter(row_number() == 1951)
 
-block_checklist_geo |>
-  filter(atlas_block == "40076C2NW")
+# block_checklist_geo |>
+#   filter(pba3_block == "40076C2NW")
 
-block_summary_seasons |>
-  slice_head(n = 1)
+# block_summary_seasons |>
+#   slice_head(n = 1)
 
 block_summary_seasons |>
   filter(season == "All seasons") |>

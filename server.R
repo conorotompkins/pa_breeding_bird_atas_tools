@@ -106,7 +106,7 @@ block_summary <- read_parquet(
     effort_distance_km = round(effort_distance_km, 2)
   ) |>
   select(
-    atlas_block,
+    pba3_block,
     season,
     species_observed,
     Observed,
@@ -248,7 +248,7 @@ server <- function(input, output) {
         filterable = TRUE,
         resizable = TRUE,
         columns = list(
-          atlas_block = colDef(
+          pba3_block = colDef(
             name = "PBA3 Atlas Block",
             minWidth = 150,
             cell = function(value) {
