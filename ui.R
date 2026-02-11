@@ -32,14 +32,6 @@ ui <- page_navbar(
 
     layout_columns(
       radioGroupButtons(
-        inputId = "block_variable",
-        label = "Variable",
-        choices = c(
-          "Effort hours" = "duration_hours",
-          "Confirmed species" = "confirmed_species"
-        )
-      ),
-      radioGroupButtons(
         inputId = "season_variable",
         label = "Season",
         choices = c(
@@ -47,16 +39,33 @@ ui <- page_navbar(
           "Breeding" = "Breeding",
           "Winter" = "Winter"
         )
+      ),
+      radioGroupButtons(
+        inputId = "block_variable",
+        label = "Variable",
+        choices = c(
+          "Effort hours" = "duration_hours",
+          "Confirmed species" = "Confirmed"
+        )
       )
     ),
     maplibreOutput("block_effort_map")
   ),
 
-  # nav_panel(
-  #   "Block Progress Table",
+  nav_panel(
+    "Block Progress Table",
 
-  #   card("Placeholder for interactive table")
-  # ),
+    radioGroupButtons(
+      inputId = "season_variable_table",
+      label = "Season",
+      choices = c(
+        "All seasons" = "All seasons",
+        "Breeding" = "Breeding",
+        "Winter" = "Winter"
+      )
+    ),
+    reactableOutput("block_completion_table")
+  ),
 
   nav_panel(
     "About",

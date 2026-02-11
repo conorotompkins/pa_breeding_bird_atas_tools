@@ -101,6 +101,24 @@ block_summary <- read_parquet(
   "input/block_summary_seasons.parquet",
   as_data_frame = FALSE
 ) |>
+  mutate(
+    duration_hours = round(duration_hours, 2),
+    effort_distance_km = round(effort_distance_km, 2)
+  ) |>
+  select(
+    pba3_block,
+    season,
+    species_observed,
+    Observed,
+    Possible,
+    Probable,
+    Confirmed,
+    checklist_count,
+    birders,
+    duration_hours,
+    effort_distance_km,
+    geometry
+  ) |>
   st_as_sf()
 
 # Define server logic required to draw a histogram ----
@@ -177,7 +195,6 @@ server <- function(input, output) {
   output$dates_table <- renderReactable({
     reactable(
       safe_dates,
-
       columns = list(
         common_name = colDef(
           "Common Name",
@@ -221,5 +238,34 @@ server <- function(input, output) {
       column = input$block_variable,
       legend_positon = "top-right"
     )
+  })
+
+  output$block_completion_table <- renderReactable({
+    block_summary |>
+      st_drop_geometry() |>
+      filter(season == input$season_variable_table) |>
+      reactable(
+        filterable = TRUE,
+        resizable = TRUE,
+        columns = list(
+          pba3_block = colDef(
+            name = "PBA3 Atlas Block",
+            minWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
+          season = colDef(name = "Season", minWidth = 100),
+          checklist_count = colDef(name = "Checklists", minWidth = 100),
+          species_observed = colDef(name = "Total species", minWidth = 120),
+          birders = colDef(name = "Atlasers", minWidth = 100),
+          duration_hours = colDef(name = "Effort hours", minWidth = 150),
+          effort_distance_km = colDef(
+            name = "Effort distance (km)",
+            minWidth = 175
+          )
+        )
+      )
   })
 }
