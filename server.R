@@ -121,6 +121,11 @@ block_summary <- read_parquet(
   ) |>
   st_as_sf()
 
+#block-atlas comparison
+missing_pba2_breeding_category_obs <- read_parquet(
+  "input/atlas_max_breeding_category_comparison.parquet"
+)
+
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
   current_month <- month(Sys.Date(), label = TRUE, abbr = TRUE) |>
@@ -265,6 +270,39 @@ server <- function(input, output) {
             name = "Effort distance (km)",
             minWidth = 175
           )
+        )
+      )
+  })
+
+  output$block_atlas_comparison_table <- renderReactable({
+    my_df <- missing_pba2_breeding_category_obs |>
+      filter(str_detect(pba3_block, input$block_choice)) |>
+      arrange(pba3_block)
+
+    req(nrow(my_df) > 0)
+
+    my_df |>
+      reactable(
+        filterable = TRUE,
+        resizable = TRUE,
+        columns = list(
+          pba3_block = colDef(
+            name = "PBA3 Atlas Block",
+            minWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
+          common_name = colDef(name = "Common Name"),
+          pba3_breeding_category_max = colDef(
+            name = "Max PBA3 Breeding Category"
+          ),
+          pba3_breeding_rank_max = colDef(name = "Max PBA3 Breeding Rank"),
+          pba2_breeding_category_max = colDef(
+            name = "Max PBA2 Breeding Category"
+          ),
+          pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
         )
       )
   })

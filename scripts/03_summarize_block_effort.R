@@ -30,9 +30,15 @@ ebd_df |>
   arrange(breeding_category)
 
 breeding_lookup <- tibble(
-  breeding_category = c("C1", "C2", "C3", "C4"),
-  breeding_category_desc = c("Observed", "Possible", "Probable", "Confirmed"),
-  breeding_rank = c(1:4)
+  breeding_category = c("0", "C1", "C2", "C3", "C4"),
+  breeding_category_desc = c(
+    "Not Observed",
+    "Observed",
+    "Possible",
+    "Probable",
+    "Confirmed"
+  ),
+  breeding_rank = c(0:4)
 )
 
 breeding_lookup
@@ -234,7 +240,7 @@ seasons <- tibble(
   season = c(rep(c("All seasons"), 12), rep("Breeding", 5), rep("Winter", 3)),
   month = c(
     month.abb,
-    c("Apr", "May", "Jun", "July", "Aug"),
+    c("Apr", "May", "Jun", "Jul", "Aug"),
     c("Dec", "Jan", "Feb")
   )
 )
@@ -390,3 +396,69 @@ block_summary_seasons |>
   scale_fill_viridis_c() +
   facet_wrap(vars(season), ncol = 1) +
   theme_bw()
+
+#expected species based on PBA2
+pbba2_df <- read_csv("input/PBBA2_block_species_codes.csv") |>
+  rename(
+    block = 1,
+    pba3_block = 2,
+    block_name = 3
+  ) |>
+  select(1:220) |>
+  pivot_longer(
+    -c(1:3),
+    names_to = "common_name",
+    values_to = "breeding_category_desc"
+  ) |>
+  filter(!str_detect(common_name, "N/A")) |>
+  mutate(
+    breeding_category_desc = case_when(
+      breeding_category_desc == "Observed/Possible" ~ "Observed",
+      .default = breeding_category_desc
+    )
+  )
+
+pba2_confirmed <- pbba2_df |>
+  left_join(breeding_lookup, by = join_by(breeding_category_desc)) |>
+  distinct(pba3_block, common_name, breeding_category_desc, breeding_rank) |>
+  rename(
+    pba2_breeding_category_max = breeding_category_desc,
+    pba2_breeding_rank_max = breeding_rank
+  )
+
+pba3_confirmed <- ebd_df |>
+  group_by(pba3_block, common_name) |>
+  filter(breeding_rank == max(breeding_rank)) |>
+  ungroup() |>
+  distinct(pba3_block, common_name, breeding_category_desc, breeding_rank) |>
+  rename(
+    pba3_breeding_category_max = breeding_category_desc,
+    pba3_breeding_rank_max = breeding_rank
+  ) |>
+  complete(
+    pba3_block,
+    common_name,
+    fill = list(
+      pba3_breeding_category_max = "Not Observed",
+      pba3_breeding_rank_max = 0
+    )
+  )
+
+atlas_max_breeding_category_comparison <- pba3_confirmed |>
+  left_join(pba2_confirmed, by = join_by(pba3_block, common_name))
+
+atlas_max_breeding_category_comparison |>
+  filter(pba3_block == "40080D1SE") |>
+  filter(pba3_breeding_rank_max < pba2_breeding_rank_max) |>
+  arrange(pba3_block, desc(pba2_breeding_rank_max))
+
+glimpse(atlas_max_breeding_category_comparison)
+
+atlas_max_breeding_category_comparison |>
+  arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
+  write_parquet("input/atlas_max_breeding_category_comparison.parquet")
+
+atlas_max_breeding_category_comparison |>
+  filter(pba3_breeding_rank_max < pba2_breeding_rank_max) |>
+  arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
+  write_parquet("input/missing_pba2_breeding_category_obs.parquet")
