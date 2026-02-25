@@ -434,18 +434,23 @@ pba3_confirmed <- ebd_df |>
   rename(
     pba3_breeding_category_max = breeding_category_desc,
     pba3_breeding_rank_max = breeding_rank
-  ) |>
-  complete(
-    pba3_block,
-    common_name,
-    fill = list(
-      pba3_breeding_category_max = "Not Observed",
-      pba3_breeding_rank_max = 0
-    )
   )
 
-atlas_max_breeding_category_comparison <- pba3_confirmed |>
-  left_join(pba2_confirmed, by = join_by(pba3_block, common_name))
+atlas_max_breeding_category_comparison <- bind_rows(
+  pba3_confirmed |> distinct(pba3_block, common_name),
+  pba2_confirmed |> distinct(pba3_block, common_name)
+) |>
+  distinct() |>
+  left_join(pba2_confirmed, by = join_by(pba3_block, common_name)) |>
+  left_join(pba3_confirmed, by = join_by(pba3_block, common_name)) |>
+  replace_na(list(
+    pba2_breeding_category_max = "Not Observed",
+    pba2_breeding_rank_max = 0,
+    pba3_breeding_category_max = "Not Observed",
+    pba3_breeding_rank_max = 0
+  ))
+
+atlas_max_breeding_category_comparison
 
 atlas_max_breeding_category_comparison |>
   filter(pba3_block == "40080D1SE") |>
@@ -459,6 +464,6 @@ atlas_max_breeding_category_comparison |>
   write_parquet("input/atlas_max_breeding_category_comparison.parquet")
 
 atlas_max_breeding_category_comparison |>
-  filter(pba3_breeding_rank_max < pba2_breeding_rank_max) |>
+  filter(pba2_breeding_rank_max > pba3_breeding_rank_max) |>
   arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
   write_parquet("input/missing_pba2_breeding_category_obs.parquet")

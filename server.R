@@ -123,7 +123,7 @@ block_summary <- read_parquet(
 
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
-  "input/atlas_max_breeding_category_comparison.parquet"
+  "input/missing_pba2_breeding_category_obs.parquet"
 )
 
 # Define server logic required to draw a histogram ----
@@ -274,14 +274,18 @@ server <- function(input, output) {
       )
   })
 
-  output$block_atlas_comparison_table <- renderReactable({
-    my_df <- missing_pba2_breeding_category_obs |>
+  atlas_comparison <- reactive({
+    req(input$block_choice)
+
+    missing_pba2_breeding_category_obs |>
       filter(str_detect(pba3_block, input$block_choice)) |>
       arrange(pba3_block)
+  })
 
-    req(nrow(my_df) > 0)
+  output$block_atlas_comparison_table <- renderReactable({
+    req(nrow(atlas_comparison()) > 0)
 
-    my_df |>
+    atlas_comparison() |>
       reactable(
         filterable = TRUE,
         resizable = TRUE,
