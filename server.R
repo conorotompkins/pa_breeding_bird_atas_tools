@@ -117,6 +117,7 @@ block_summary <- read_parquet(
     birders,
     duration_hours,
     effort_distance_km,
+    pct_missing_pba2_confirmations,
     geometry
   ) |>
   st_as_sf()
@@ -269,6 +270,10 @@ server <- function(input, output) {
           effort_distance_km = colDef(
             name = "Effort distance (km)",
             minWidth = 175
+          ),
+          pct_missing_pba2_confirmations = colDef(
+            name = "% of confirmations from PBA2 missing",
+            format = colFormat(percent = TRUE, digits = 0)
           )
         )
       )
