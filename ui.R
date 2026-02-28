@@ -7,7 +7,11 @@ library(mapgl)
 ui <- page_navbar(
   fillable_mobile = TRUE,
 
-  title = "Third Pennsylvania Bird Atlas Tools",
+  title = "PBA3 Tools",
+
+  window_title = "PBA3 Tools",
+
+  nav_spacer(),
 
   nav_panel(
     "Breeding Calendar",
