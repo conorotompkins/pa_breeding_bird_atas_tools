@@ -86,13 +86,31 @@ ui <- page_navbar(
   nav_panel(
     "About",
 
-    tags$a(
-      href = "https://ebird.org/atlaspa/home",
-      "Third Pennsylvania Bird Atlas",
-      target = "_blank"
+    card(
+      card_image(
+        file = "input/pba3_logo.svg",
+        href = "https://ebird.org/atlaspa/home",
+        fill = TRUE
+      ),
+      max_height = 100
     ),
 
-    p("App developed by Conor Tompkins")
+    card(
+      markdown("Text goes here")
+    ),
+
+    card_footer(
+      "App developed by Conor Tompkins with assistance from Amber Wiewel and Joe Gyekis.",
+      popover(
+        a(
+          "eBird data extracted from the eBird Basic Dataset.",
+          href = "https://ebird.org/data/download"
+        ),
+        markdown(
+          "eBird Basic Dataset. Version: EBD_relNov-2025. Cornell Lab of Ornithology, Ithaca, New York. Nov 2025."
+        )
+      )
+    )
   ),
 
   nav_panel(
