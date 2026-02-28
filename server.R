@@ -315,4 +315,13 @@ server <- function(input, output) {
         )
       )
   })
+
+  output$readme <- renderUI({
+    tags$iframe(
+      seamless = "seamless",
+      src = "readme.html",
+      width = "100%",
+      height = "100%"
+    )
+  })
 }

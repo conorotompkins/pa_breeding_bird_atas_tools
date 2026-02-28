@@ -96,7 +96,7 @@ ui <- page_navbar(
     ),
 
     card(
-      markdown("Text goes here")
+      uiOutput("readme")
     ),
 
     card_footer(
