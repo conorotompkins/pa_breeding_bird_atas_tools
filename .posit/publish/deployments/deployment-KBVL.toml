@@ -2,7 +2,7 @@
 '$schema' = 'https://cdn.posit.co/publisher/schemas/posit-publishing-record-schema-v3.json'
 server_type = 'connect_cloud'
 server_url = 'https://connect.posit.cloud'
-client_version = '1.31.2'
+client_version = '1.35.2'
 created_at = ''
 dismissed_at = ''
 type = 'r-shiny'
@@ -11,14 +11,15 @@ id = '019c15fc-5025-6d7c-3432-6474a12c845c'
 dashboard_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c'
 direct_url = 'https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history'
-deployed_at = '2026-02-10T19:12:41-05:00'
-bundle_id = '019c4a0b-0032-6710-bb3d-21789927c42b'
+deployed_at = '2026-02-27T15:58:59-05:00'
+bundle_id = '019ca0e5-c58b-230a-e3cb-3f76279fb6f9'
 files = [
   '.posit/publish/PBA3 Tools-HJG8.toml',
   '.posit/publish/deployments/deployment-KBVL.toml',
   'input/bird_safe_dates.csv',
   'input/block_summary_seasons.parquet',
   'input/breeding_calendar.csv',
+  'input/missing_pba2_breeding_category_obs.parquet',
   'renv.lock',
   'server.R',
   'ui.R'
@@ -42,7 +43,8 @@ files = [
   '/input/bird_safe_dates.csv',
   '/input/block_summary.parquet',
   '/input/breeding_calendar.csv',
-  '/input/block_summary_seasons.parquet'
+  '/input/block_summary_seasons.parquet',
+  '/input/missing_pba2_breeding_category_obs.parquet'
 ]
 title = 'PBA3 Tools'
 
