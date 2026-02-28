@@ -1,0 +1,70 @@
+---
+title: "PBA3 Tools Documentation"
+format: html
+---
+
+## Breeding Calendar
+
+### Calendar
+
+This table shows the breeding code calendar for each species. You can filter by Common Name and whether the species is Priority or not.
+
+### Safe Dates
+
+This table shows the "Safe Dates" for each species. It shows when the "Probable" and "Possible" time periods start and end.
+
+### Data sources
+
+The calendar and related data were provided by Amber Wiewel.
+
+## Block Progress
+
+### Table
+
+This table shows summary statistics about Atlas effort in a given block. The statistics are calculated separately for each "season", defined below.
+
+Definitions:
+
+* PBA3 Atlas Block:
+    * This is the block ID as used by eBird. For example, https://ebird.org/atlaspa/block/40080D1SE refers to the block "40080D1SE", aka "Pittsburgh West SE"
+* Season
+    * "All seasons" is year-round
+    * "Breeding" is April through August
+    * "Winter" is December through February
+* Total species
+* Observed
+* Possible
+* Probable
+* Confirmed
+* Checklists
+* Atlasers
+* Effort hours
+* Effort distance (km)
+* % of confirmations from PBA2 missing
+
+### Map
+
+This interactive map shows summary statistics for the atlas blocks. The map can be filtered by season. Currenly the available statistics are:
+
+* Effort hours
+* Confirmed Species
+
+### Atlas Comparison Table
+
+This table compares the "breeding rank" of a species in a given block from PBA2 to PBA3. The table only shows species where the PBA2 rank is higher than the PBA3 rank. For example, if American Crow was Confirmed in PBA2, but is Probable in PBA3, it will show up in this table.
+
+Breeding rank:
+
+* 0: Not Observed
+* 1: Observed
+* 2: Possible
+* 3: Probable
+* 4: Confirmed 
+
+### Data sources
+
+All data comes from the [eBird Basic Dataset](https://ebird.org/data/download).
+
+## To do
+
+See the planned improvements on the app's [GitHub Issues page](https://github.com/conorotompkins/pa_breeding_bird_atas_tools/issues)

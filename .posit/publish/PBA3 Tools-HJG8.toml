@@ -16,7 +16,8 @@ files = [
   '/input/block_summary.parquet',
   '/input/breeding_calendar.csv',
   '/input/block_summary_seasons.parquet',
-  '/input/missing_pba2_breeding_category_obs.parquet'
+  '/input/missing_pba2_breeding_category_obs.parquet',
+  '/www/readme.html'
 ]
 title = 'PBA3 Tools'
 
