@@ -16,7 +16,7 @@ output_file <- "input/pa_breeding_bird_atlas_processed.txt"
 
 ebd_df <- read_delim(output_file, delim = "\t") |>
   mutate(across(breeding_code, str_squish)) |>
-  mutate(breeding_category = coalesce(breeding_category, "C1")) |>
+  mutate(breeding_category = coalesce(breeding_category, "C1")) |> #should this be C0 instead of C1?
   mutate(
     observation_month = month(observation_date, label = TRUE, abbr = TRUE)
   ) |>
@@ -30,7 +30,7 @@ ebd_df |>
   arrange(breeding_category)
 
 breeding_lookup <- tibble(
-  breeding_category = c("0", "C1", "C2", "C3", "C4"),
+  breeding_category = c("0", "C1", "C2", "C3", "C4"), #consider C0 instead of 0 to be consistent
   breeding_category_desc = c(
     "Not Observed",
     "Observed",
