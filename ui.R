@@ -86,14 +86,14 @@ ui <- page_navbar(
   nav_panel(
     "About",
 
-    card(
-      card_image(
-        file = "input/pba3_logo.svg",
-        href = "https://ebird.org/atlaspa/home",
-        fill = TRUE
-      ),
-      max_height = 100
-    ),
+    # card(
+    #   card_image(
+    #     file = "input/pba3_logo.svg",
+    #     href = "https://ebird.org/atlaspa/home",
+    #     fill = TRUE
+    #   ),
+    #   max_height = 100
+    # ),
 
     card(
       uiOutput("readme")
