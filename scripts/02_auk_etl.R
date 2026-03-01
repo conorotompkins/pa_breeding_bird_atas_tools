@@ -2,10 +2,20 @@ library(tidyverse)
 library(auk)
 library(tictoc)
 library(sf)
+library(tools)
 
 auk_file <- "input/ebd_US-PA_202401_202601_smp_relJan-2026/ebd_US-PA_202401_202601_smp_relJan-2026.txt"
 
 file.exists(auk_file) == TRUE
+
+release_pattern <- "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4}.txt"
+
+ebird_release <- str_extract(auk_file, release_pattern) |>
+  file_path_sans_ext()
+
+ebird_release
+
+write_file(ebird_release, "input/ebird_release.txt")
 
 output_file <- "input/pa_breeding_bird_atlas_data_raw.txt"
 

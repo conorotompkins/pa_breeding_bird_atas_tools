@@ -10,6 +10,9 @@ library(tictoc)
 library(santoku)
 library(mapgl)
 
+####ebird release
+ebird_release <- read_file("input/ebird_release.txt")
+
 ####breeding bird calendar
 breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
 
@@ -323,5 +326,9 @@ server <- function(input, output) {
       width = "100%",
       height = "100%"
     )
+  })
+
+  output$ebird_release <- renderUI({
+    str_c("Data includes checklists from Jan-2024 to", ebird_release, sep = " ")
   })
 }
