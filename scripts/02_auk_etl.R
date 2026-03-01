@@ -3,7 +3,7 @@ library(auk)
 library(tictoc)
 library(sf)
 
-auk_file <- "input/ebd_US-PA_202401_202601_unv_smp_relNov-2025/ebd_US-PA_202401_202601_unv_smp_relNov-2025.txt"
+auk_file <- "input/ebd_US-PA_202401_202601_smp_relJan-2026/ebd_US-PA_202401_202601_smp_relJan-2026.txt"
 
 file.exists(auk_file) == TRUE
 
@@ -12,9 +12,9 @@ output_file <- "input/pa_breeding_bird_atlas_data_raw.txt"
 tic()
 ebd <- auk_file |>
   auk_ebd() |>
-  auk_date(date = c("2024-01-01", "2025-12-31")) |>
+  auk_date(date = c("2024-01-01", "2026-01-31")) |>
   auk_project("Pennsylvania Bird Atlas") |>
-  auk_filter(file = output_file) |>
+  auk_filter(file = output_file, overwrite = TRUE) |>
   # 4. read text file into r data frame
   read_ebd()
 toc()

@@ -23,6 +23,9 @@ ebd_df <- read_delim(output_file, delim = "\t") |>
   rename(pba3_block = atlas_block)
 toc()
 
+ebd_df |>
+  summarize(min(observation_date), max(observation_date))
+
 glimpse(ebd_df)
 
 ebd_df |>
@@ -61,8 +64,6 @@ st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
 pba2_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
   select(BLOCK_ID) |>
   rename(pba2_block = BLOCK_ID)
-
-glimpse(pba2_blocks)
 
 pba2_blocks |>
   st_drop_geometry() |>
@@ -133,71 +134,98 @@ block_checklist_geo <- block_checklist_geo |>
   ) |>
   filter(!(pba2_block == 4932 & is.na(pba3_block)))
 
-block_checklist_geo |>
-  filter(pba3_block == "40075F2SE" | pba3_block == "40075F2SW")
-
 glimpse(block_checklist_geo)
 
-# block_checklist_geo |>
-#   st_drop_geometry() |>
-#   as_tibble() |>
-#   distinct(pba3_block, pba2_block) |>
-#   count(pba3_block, sort = TRUE)
+block_checklist_geo |>
+  st_drop_geometry() |>
+  as_tibble() |>
+  distinct(pba3_block, pba2_block) |>
+  count(pba3_block, sort = TRUE)
 
-# block_checklist_geo |>
-#   st_drop_geometry() |>
-#   as_tibble() |>
-#   distinct(pba3_block, pba2_block) |>
-#   count(pba2_block, sort = TRUE)
+block_checklist_geo |>
+  st_drop_geometry() |>
+  as_tibble() |>
+  distinct(pba3_block, pba2_block) |>
+  drop_na(pba3_block) |>
+  count(pba3_block, sort = TRUE) |>
+  filter(n > 1) |>
+  nrow() ==
+  0
 
-# pba2_blocks |>
-#   filter(pba2_block == 4932) |>
-#   st_drop_geometry() |>
-#   as_tibble()
+block_checklist_geo |>
+  st_drop_geometry() |>
+  as_tibble() |>
+  distinct(pba3_block, pba2_block) |>
+  count(pba2_block, sort = TRUE) |>
+  filter(n > 1) |>
+  nrow() ==
+  0
 
-# block_checklist_geo |>
-#   filter(pba2_block == 4932) |>
-#   st_drop_geometry() |>
-#   as_tibble()
+block_checklist_geo |>
+  filter(pba2_block == 4932) |>
+  st_drop_geometry() |>
+  as_tibble()
 
-# block_checklist_geo |>
-#   filter(pba2_block == 4932) |>
-#   maplibre_view()
+pba3_block_mismatch <- block_checklist_geo |>
+  filter(pba2_block == 3670) |>
+  distinct(pba2_block, pba3_block)
 
-# pba3_block_mismatch <- block_checklist_geo |>
-#   filter(pba2_block == 3670) |>
-#   distinct(pba2_block, pba3_block)
+pba3_block_mismatch
 
-# pba3_block_mismatch
+checklist_pba3_block |>
+  filter(pba3_block == "40075F2SE")
 
-# maplibre(
-#   bounds = pba2_blocks |>
-#     filter(pba2_block == 3670)
-# ) |>
-#   add_fill_layer(
-#     id = "pba2_blocks",
-#     source = pba2_blocks,
-#     fill_color = "blue",
-#     fill_opacity = .2,
-#     tooltip = "pba2_block"
-#   ) |>
-#   add_circle_layer(
-#     id = "pba3_centroids",
-#     source = pba3_centroids,
-#     circle_radius = 6,
-#     circle_color = "red",
-#     tooltip = "pba3_block"
-#   ) |>
-#   add_circle_layer(
-#     id = "checklists",
-#     source = checklist_block |>
-#       filter(pba3_block == "40075F2SE"),
-#     circle_radius = 4
-#   )
+maplibre(
+  bounds = checklist_pba3_block |>
+    filter(pba3_block == "40075F2SE")
+) |>
+  add_fill_layer(
+    id = "pba2_blocks",
+    source = pba2_blocks,
+    fill_color = "blue",
+    fill_opacity = .2,
+    tooltip = "pba2_block"
+  ) |>
+  add_circle_layer(
+    id = "checklists",
+    source = checklist_pba3_block |>
+      filter(pba3_block == "40075F2SE")
+  )
 
-# checklist_block |>
-#   semi_join(pba3_block_mismatch, by = "pba3_block") |>
-#   maplibre_view()
+block_checklist_geo |>
+  filter(pba3_block == "40075F2SE")
+
+maplibre(
+  bounds = checklist_pba3_block |>
+    filter(pba3_block == "40075F2SE")
+) |>
+  add_fill_layer(
+    id = "pba2_blocks",
+    source = block_checklist_geo,
+    fill_color = "blue",
+    fill_opacity = .2,
+    tooltip = "pba2_block"
+  ) |>
+  add_symbol_layer(
+    id = "pba2_block_id",
+    source = block_checklist_geo,
+    text_field = get_column("pba2_block")
+  ) |>
+  add_circle_layer(
+    id = "pba3_centroids",
+    source = pba3_centroids,
+    circle_radius = 6,
+    circle_color = "red",
+    tooltip = "pba3_block"
+  ) |>
+  add_circle_layer(
+    id = "checklists",
+    source = checklist_pba3_block |>
+      filter(pba3_block == "40075F2SE"),
+    circle_radius = 4,
+    circle_color = "yellow"
+  )
+
 
 # ggplot() +
 #   geom_sf(
