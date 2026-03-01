@@ -11,14 +11,15 @@ id = '019c15fc-5025-6d7c-3432-6474a12c845c'
 dashboard_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c'
 direct_url = 'https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history'
-deployed_at = '2026-03-01T10:01:02-05:00'
-bundle_id = '019ca9ea-c81f-891c-c06b-d94a736f7111'
+deployed_at = '2026-03-01T10:24:14-05:00'
+bundle_id = '019caa00-0159-2ae0-c18b-57771c5a356a'
 files = [
   '.posit/publish/PBA3 Tools-HJG8.toml',
   '.posit/publish/deployments/deployment-KBVL.toml',
   'input/bird_safe_dates.csv',
   'input/block_summary_seasons.parquet',
   'input/breeding_calendar.csv',
+  'input/ebird_release.txt',
   'input/missing_pba2_breeding_category_obs.parquet',
   'renv.lock',
   'server.R',
@@ -46,7 +47,8 @@ files = [
   '/input/breeding_calendar.csv',
   '/input/block_summary_seasons.parquet',
   '/input/missing_pba2_breeding_category_obs.parquet',
-  '/www/readme.html'
+  '/www/readme.html',
+  '/input/ebird_release.txt'
 ]
 title = 'PBA3 Tools'
 
@@ -117,6 +119,14 @@ source = 'Repository'
 repository = 'CRAN'
 requirements = ['methods', 'utils']
 hash = '6b868847b365672d6c1677b1608da9ed'
+
+[renv.packages.VGAM]
+package = 'VGAM'
+version = '1.1-14'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['R', 'methods', 'splines', 'stats', 'stats4']
+hash = 'd0c561977ba6b718d3261aa60b417c2d'
 
 [renv.packages.arrow]
 package = 'arrow'
@@ -197,6 +207,14 @@ source = 'Repository'
 repository = 'CRAN'
 requirements = ['R', 'backports', 'dplyr', 'generics', 'glue', 'lifecycle', 'purrr', 'rlang', 'stringr', 'tibble', 'tidyr']
 hash = 'a4652c36d1f8abfc3ddf4774f768c934'
+
+[renv.packages.bsicons]
+package = 'bsicons'
+version = '0.1.2'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['R', 'cli', 'htmltools', 'rlang', 'utils']
+hash = 'd8f892fbd94d0b9b1f6d688b05b8633c'
 
 [renv.packages.bslib]
 package = 'bslib'
@@ -365,6 +383,20 @@ repository = 'CRAN'
 requirements = ['class', 'grDevices', 'graphics', 'methods', 'proxy', 'stats', 'utils']
 hash = '27a09ca40266a1066d62ef5402dd51d6'
 
+[renv.packages.ebbr]
+package = 'ebbr'
+version = '0.1'
+source = 'GitHub'
+repository = ''
+requirements = ['VGAM', 'broom', 'dplyr', 'gamlss', 'gamlss.dist', 'ggplot2', 'lazyeval', 'purrr', 'stats4', 'tidyr', 'utils']
+hash = 'f6332fd20558035b3262897b8f578c38'
+remote_type = 'github'
+remote_ref = 'master'
+remote_sha = '4b9747ddc9c45df5b0463b93391ba7502bab92df'
+remote_host = 'api.github.com'
+remote_repo = 'ebbr'
+remote_username = 'dgrtwo'
+
 [renv.packages.evaluate]
 package = 'evaluate'
 version = '0.24.0'
@@ -410,6 +442,30 @@ source = 'Repository'
 repository = 'CRAN'
 requirements = ['R', 'methods']
 hash = '15aeb8c27f5ea5161f9f6a641fafd93a'
+
+[renv.packages.gamlss]
+package = 'gamlss'
+version = '5.5-0'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['MASS', 'R', 'gamlss.data', 'gamlss.dist', 'grDevices', 'graphics', 'methods', 'nlme', 'parallel', 'splines', 'stats', 'survival', 'utils']
+hash = '72c42cc6bdbca74543e413b45b4c3c64'
+
+[renv.packages.'gamlss.data']
+package = 'gamlss.data'
+version = '6.0-7'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['R']
+hash = 'bcccd808ff11c2632434a21a1d33ffc9'
+
+[renv.packages.'gamlss.dist']
+package = 'gamlss.dist'
+version = '6.1-1'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['MASS', 'R', 'grDevices', 'graphics', 'methods', 'stats']
+hash = '808dd6784bceed33be0f48d674541e29'
 
 [renv.packages.gargle]
 package = 'gargle'
@@ -618,6 +674,14 @@ source = 'Repository'
 repository = 'CRAN'
 requirements = ['R', 'grDevices', 'graphics', 'grid', 'stats', 'utils']
 hash = 'cc5ac1ba4c238c7ca9fa6a87ca11a7e2'
+
+[renv.packages.lazyeval]
+package = 'lazyeval'
+version = '0.2.2'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['R']
+hash = 'd908914ae53b04d4c0c0fd72ecc35370'
 
 [renv.packages.lifecycle]
 package = 'lifecycle'
@@ -998,6 +1062,14 @@ source = 'Repository'
 repository = 'CRAN'
 requirements = ['R', 'cli', 'glue', 'lifecycle', 'magrittr', 'rlang', 'stringi', 'vctrs']
 hash = 'd47392652eedc68bf916657347ff2526'
+
+[renv.packages.survival]
+package = 'survival'
+version = '3.6-4'
+source = 'Repository'
+repository = 'CRAN'
+requirements = ['Matrix', 'R', 'graphics', 'methods', 'splines', 'stats', 'utils']
+hash = 'e6e3071f471513e4b85f98ca041303c7'
 
 [renv.packages.sys]
 package = 'sys'

@@ -1,5 +1,6 @@
 library(shiny)
 library(bslib)
+library(bsicons)
 library(reactable)
 library(shinyWidgets)
 library(mapgl)
@@ -136,5 +137,12 @@ ui <- page_navbar(
         title = "Block map"
       )
     ),
+  ),
+  nav_item(
+    "Release",
+    tooltip(
+      bs_icon("info-circle"),
+      uiOutput("ebird_release")
+    )
   )
 )
