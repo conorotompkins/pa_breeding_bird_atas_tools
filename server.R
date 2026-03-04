@@ -195,7 +195,8 @@ server <- function(input, output) {
         filterable = TRUE,
         sticky = "left",
         style = list(borderRight = "2px solid #eee"),
-        headerStyle = list(borderRight = "1px solid #eee")
+        headerStyle = list(borderRight = "1px solid #eee"),
+        minWidth = 200
       ),
       priority_species = colDef("Priority", filterable = TRUE)
     )
@@ -205,7 +206,7 @@ server <- function(input, output) {
 
   output$calendar <- renderReactable({
     breeding_calendar() |>
-      reactable(columns = breeding_table_formatting())
+      reactable(columns = breeding_table_formatting(), defaultPageSize = 15)
   })
 
   output$dates_table <- renderReactable({
@@ -235,7 +236,8 @@ server <- function(input, output) {
           name = "Possible end",
           cell = function(value) strftime(value, "%b %e")
         )
-      )
+      ),
+      defaultPageSize = 15
     )
   })
 
