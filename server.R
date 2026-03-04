@@ -290,7 +290,7 @@ server <- function(input, output) {
             minWidth = 175
           ),
           pct_missing_pba2_confirmations = colDef(
-            name = "% of confirmations from PBA2 missing",
+            name = "% of PBA2 confirmations missing",
             format = colFormat(percent = TRUE, digits = 0),
             minWidth = 300
           )
