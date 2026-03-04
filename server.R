@@ -261,17 +261,24 @@ server <- function(input, output) {
       reactable(
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(name = "Block ID", cell = function(value) {
-            url <- paste0("https://ebird.org/atlaspa/block/", value)
-            tags$a(href = url, target = "_blank", value)
-          }),
+          pba3_block = colDef(
+            name = "Block ID",
+            filterable = TRUE,
+            minWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
           block_name = colDef(
             name = "Block name",
-            minWidth = 150
+            filterable = TRUE,
+            minWidth = 220
           ),
           block_region = colDef(
             name = "Block region",
-            minWidth = 150
+            filterable = TRUE,
+            minWidth = 180
           ),
           season = colDef(name = "Season", minWidth = 100),
           checklist_count = colDef(name = "Checklists", minWidth = 100),
@@ -287,7 +294,8 @@ server <- function(input, output) {
             format = colFormat(percent = TRUE, digits = 0),
             minWidth = 300
           )
-        )
+        ),
+        defaultPageSize = 15
       )
   })
 
