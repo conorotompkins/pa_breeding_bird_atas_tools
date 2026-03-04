@@ -15,7 +15,7 @@ ui <- page_navbar(
   nav_spacer(),
 
   nav_menu(
-    "Breeding Calendar",
+    "Breeding season calendar",
     nav_panel(
       "Calendar",
 
@@ -29,9 +29,9 @@ ui <- page_navbar(
     ),
 
     nav_panel(
-      "Code Glossary",
+      "Season glossary",
 
-      reactableOutput("glossary_table")
+      reactableOutput("breeding_season_glossary_table")
     )
   ),
 
@@ -43,7 +43,7 @@ ui <- page_navbar(
       layout_columns(
         radioGroupButtons(
           inputId = "season_variable",
-          label = "Season",
+          label = "Select season",
           choices = c(
             "All seasons" = "All seasons",
             "Breeding" = "Breeding",
@@ -67,7 +67,7 @@ ui <- page_navbar(
 
       radioGroupButtons(
         inputId = "season_variable_table",
-        label = "Season",
+        label = "Select season",
         choices = c(
           "All seasons" = "All seasons",
           "Breeding" = "Breeding",
@@ -79,7 +79,7 @@ ui <- page_navbar(
 
     nav_panel(
       "Atlas Comparison Table",
-      textInput(inputId = "block_choice", label = "Choose Block"),
+      textInput(inputId = "block_choice", label = "Enter Block ID"),
       reactableOutput("block_atlas_comparison_table")
     )
   ),

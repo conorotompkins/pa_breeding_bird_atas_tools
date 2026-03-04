@@ -54,8 +54,8 @@ breeding_color_formatting <- function(x) {
   )
 }
 
-glossary_table <- tibble(
-  Code = c("B", "E", "M", "N"),
+breeding_season_glossary_table <- tibble(
+  Season = c("B", "E", "M", "N"),
   Description = c(
     "Breeding season only",
     "Either migration or breeding",
@@ -65,11 +65,14 @@ glossary_table <- tibble(
 )
 
 #formatting for glossary
-glossary_cols <- names(glossary_table)
+season_glossary_cols <- names(breeding_season_glossary_table)
 
-glossary_col_styles <- map(glossary_cols, breeding_color_formatting)
+season_glossary_col_styles <- map(
+  season_glossary_cols,
+  breeding_color_formatting
+)
 
-names(glossary_col_styles) <- glossary_cols
+names(season_glossary_col_styles) <- season_glossary_cols
 
 current_date <- Sys.Date()
 
@@ -192,7 +195,8 @@ server <- function(input, output) {
         filterable = TRUE,
         sticky = "left",
         style = list(borderRight = "2px solid #eee"),
-        headerStyle = list(borderRight = "1px solid #eee")
+        headerStyle = list(borderRight = "1px solid #eee"),
+        minWidth = 200
       ),
       priority_species = colDef("Priority", filterable = TRUE)
     )
@@ -202,7 +206,7 @@ server <- function(input, output) {
 
   output$calendar <- renderReactable({
     breeding_calendar() |>
-      reactable(columns = breeding_table_formatting())
+      reactable(columns = breeding_table_formatting(), defaultPageSize = 15)
   })
 
   output$dates_table <- renderReactable({
@@ -232,13 +236,17 @@ server <- function(input, output) {
           name = "Possible end",
           cell = function(value) strftime(value, "%b %e")
         )
-      )
+      ),
+      defaultPageSize = 15
     )
   })
 
-  output$glossary_table <- renderReactable({
-    glossary_table |>
-      reactable(columns = glossary_col_styles)
+  output$breeding_season_glossary_table <- renderReactable({
+    breeding_season_glossary_table |>
+      reactable(
+        columns = season_glossary_col_styles,
+        defaultColDef = colDef(maxWidth = 250)
+      )
   })
 
   #block effort map
@@ -261,17 +269,24 @@ server <- function(input, output) {
       reactable(
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(name = "Block ID", cell = function(value) {
-            url <- paste0("https://ebird.org/atlaspa/block/", value)
-            tags$a(href = url, target = "_blank", value)
-          }),
+          pba3_block = colDef(
+            name = "Block ID",
+            filterable = TRUE,
+            minWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
           block_name = colDef(
             name = "Block name",
-            minWidth = 150
+            filterable = TRUE,
+            minWidth = 220
           ),
           block_region = colDef(
             name = "Block region",
-            minWidth = 150
+            filterable = TRUE,
+            minWidth = 180
           ),
           season = colDef(name = "Season", minWidth = 100),
           checklist_count = colDef(name = "Checklists", minWidth = 100),
@@ -283,11 +298,12 @@ server <- function(input, output) {
             minWidth = 175
           ),
           pct_missing_pba2_confirmations = colDef(
-            name = "% of confirmations from PBA2 missing",
+            name = "% of PBA2 confirmations missing",
             format = colFormat(percent = TRUE, digits = 0),
             minWidth = 300
           )
-        )
+        ),
+        defaultPageSize = 15
       )
   })
 
@@ -304,20 +320,26 @@ server <- function(input, output) {
 
     atlas_comparison() |>
       reactable(
-        filterable = TRUE,
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(name = "Block ID", cell = function(value) {
-            url <- paste0("https://ebird.org/atlaspa/block/", value)
-            tags$a(href = url, target = "_blank", value)
-          }),
+          pba3_block = colDef(
+            name = "Block ID",
+            filterable = TRUE,
+            maxWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
           block_name = colDef(
             name = "Block name",
-            minWidth = 150
+            filterable = TRUE,
+            maxWidth = 220
           ),
           block_region = colDef(
             name = "Block region",
-            minWidth = 150
+            filterable = TRUE,
+            maxWidth = 220
           ),
           common_name = colDef(name = "Common Name"),
           pba3_breeding_category_max = colDef(
@@ -328,7 +350,8 @@ server <- function(input, output) {
             name = "Max PBA2 Breeding Category"
           ),
           pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
-        )
+        ),
+        defaultPageSize = 15,
       )
   })
 
