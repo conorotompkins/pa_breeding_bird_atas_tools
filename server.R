@@ -312,20 +312,26 @@ server <- function(input, output) {
 
     atlas_comparison() |>
       reactable(
-        filterable = TRUE,
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(name = "Block ID", cell = function(value) {
-            url <- paste0("https://ebird.org/atlaspa/block/", value)
-            tags$a(href = url, target = "_blank", value)
-          }),
+          pba3_block = colDef(
+            name = "Block ID",
+            filterable = TRUE,
+            maxWidth = 150,
+            cell = function(value) {
+              url <- paste0("https://ebird.org/atlaspa/block/", value)
+              tags$a(href = url, target = "_blank", value)
+            }
+          ),
           block_name = colDef(
             name = "Block name",
-            minWidth = 150
+            filterable = TRUE,
+            maxWidth = 220
           ),
           block_region = colDef(
             name = "Block region",
-            minWidth = 150
+            filterable = TRUE,
+            maxWidth = 220
           ),
           common_name = colDef(name = "Common Name"),
           pba3_breeding_category_max = colDef(
@@ -336,7 +342,8 @@ server <- function(input, output) {
             name = "Max PBA2 Breeding Category"
           ),
           pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
-        )
+        ),
+        defaultPageSize = 15,
       )
   })
 
