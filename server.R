@@ -54,8 +54,8 @@ breeding_color_formatting <- function(x) {
   )
 }
 
-glossary_table <- tibble(
-  Code = c("B", "E", "M", "N"),
+breeding_season_glossary_table <- tibble(
+  Season = c("B", "E", "M", "N"),
   Description = c(
     "Breeding season only",
     "Either migration or breeding",
@@ -65,11 +65,14 @@ glossary_table <- tibble(
 )
 
 #formatting for glossary
-glossary_cols <- names(glossary_table)
+season_glossary_cols <- names(breeding_season_glossary_table)
 
-glossary_col_styles <- map(glossary_cols, breeding_color_formatting)
+season_glossary_col_styles <- map(
+  season_glossary_cols,
+  breeding_color_formatting
+)
 
-names(glossary_col_styles) <- glossary_cols
+names(season_glossary_col_styles) <- season_glossary_cols
 
 current_date <- Sys.Date()
 
@@ -236,9 +239,12 @@ server <- function(input, output) {
     )
   })
 
-  output$glossary_table <- renderReactable({
-    glossary_table |>
-      reactable(columns = glossary_col_styles)
+  output$breeding_season_glossary_table <- renderReactable({
+    breeding_season_glossary_table |>
+      reactable(
+        columns = season_glossary_col_styles,
+        defaultColDef = colDef(maxWidth = 250)
+      )
   })
 
   #block effort map
