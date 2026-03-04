@@ -10,6 +10,11 @@ options(scipen = 999, digits = 4)
 
 theme_set(theme_bw())
 
+#block name lookup file
+block_name_lookup <- read_csv("input/block_name_lookup.csv") |>
+  distinct(block_id, region, block_name) |>
+  rename(pba3_block = block_id, block_region = region)
+
 #checklists
 tic()
 output_file <- "input/pa_breeding_bird_atlas_processed.txt"
@@ -22,6 +27,13 @@ ebd_df <- read_delim(output_file, delim = "\t") |>
   ) |>
   rename(pba3_block = atlas_block)
 toc()
+
+block_name_lookup |>
+  anti_join(ebd_df |> distinct(pba3_block))
+
+ebd_df |>
+  distinct(pba3_block) |>
+  anti_join(block_name_lookup)
 
 ebd_df |>
   summarize(min(observation_date), max(observation_date))
@@ -72,18 +84,18 @@ pba2_blocks |>
   nrow() ==
   0
 
-maplibre(bounds = pba2_blocks) |>
-  add_fill_layer(
-    source = pba2_blocks,
-    id = "blocks",
-    fill_opacity = .2,
-    tooltip = "pba2_block"
-  ) |>
-  add_symbol_layer(
-    source = pba2_blocks,
-    id = "block_labels",
-    text_field = get_column("pba2_block")
-  )
+# maplibre(bounds = pba2_blocks) |>
+#   add_fill_layer(
+#     source = pba2_blocks,
+#     id = "blocks",
+#     fill_opacity = .2,
+#     tooltip = "pba2_block"
+#   ) |>
+#   add_symbol_layer(
+#     source = pba2_blocks,
+#     id = "block_labels",
+#     text_field = get_column("pba2_block")
+#   )
 
 #distinct of checklist coordinates and pba3_block
 checklist_pba3_block <- ebd_df |>
@@ -342,7 +354,21 @@ atlas_max_breeding_rank_comparison <- bind_rows(
     pba2_breeding_rank_max = 0,
     pba3_breeding_category_max = "Not Observed",
     pba3_breeding_rank_max = 0
-  ))
+  )) |>
+  left_join(block_name_lookup, by = join_by(pba3_block)) |>
+  mutate(
+    block_name = coalesce(
+      block_name,
+      "Unknown block name"
+    ),
+    block_region = coalesce(
+      block_region,
+      "Unknown region"
+    )
+  ) |>
+  select(pba3_block, block_name, block_region, everything())
+
+glimpse(atlas_max_breeding_rank_comparison)
 
 atlas_max_breeding_rank_comparison |>
   filter(pba3_block == "40080D1SE") |>
@@ -487,7 +513,19 @@ block_summary_seasons <- block_summary_seasons |>
     confirmed_pba2_unconfirmed_pba3 |>
       select(-species_count) |>
       mutate(season = "All seasons")
-  )
+  ) |>
+  left_join(block_name_lookup, by = join_by(pba3_block)) |>
+  mutate(
+    block_name = coalesce(
+      block_name,
+      "Unknown block name"
+    ),
+    block_region = coalesce(
+      block_region,
+      "Unknown region"
+    )
+  ) |>
+  select(pba3_block, block_name, block_region, everything())
 
 glimpse(block_summary_seasons)
 

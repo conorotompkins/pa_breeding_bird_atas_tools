@@ -110,6 +110,8 @@ block_summary <- read_parquet(
   ) |>
   select(
     pba3_block,
+    block_name,
+    block_region,
     season,
     species_observed,
     Observed,
@@ -129,6 +131,8 @@ block_summary <- read_parquet(
 missing_pba2_breeding_category_obs <- read_parquet(
   "input/missing_pba2_breeding_category_obs.parquet"
 )
+
+#glimpse(missing_pba2_breeding_category_obs)
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
@@ -253,17 +257,21 @@ server <- function(input, output) {
     block_summary |>
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
+      arrange(block_region, block_name) |>
       reactable(
-        filterable = TRUE,
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(
-            name = "PBA3 Atlas Block",
-            minWidth = 150,
-            cell = function(value) {
-              url <- paste0("https://ebird.org/atlaspa/block/", value)
-              tags$a(href = url, target = "_blank", value)
-            }
+          pba3_block = colDef(name = "Block ID", cell = function(value) {
+            url <- paste0("https://ebird.org/atlaspa/block/", value)
+            tags$a(href = url, target = "_blank", value)
+          }),
+          block_name = colDef(
+            name = "Block name",
+            minWidth = 150
+          ),
+          block_region = colDef(
+            name = "Block region",
+            minWidth = 150
           ),
           season = colDef(name = "Season", minWidth = 100),
           checklist_count = colDef(name = "Checklists", minWidth = 100),
@@ -276,7 +284,8 @@ server <- function(input, output) {
           ),
           pct_missing_pba2_confirmations = colDef(
             name = "% of confirmations from PBA2 missing",
-            format = colFormat(percent = TRUE, digits = 0)
+            format = colFormat(percent = TRUE, digits = 0),
+            minWidth = 300
           )
         )
       )
@@ -298,13 +307,17 @@ server <- function(input, output) {
         filterable = TRUE,
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(
-            name = "PBA3 Atlas Block",
-            minWidth = 150,
-            cell = function(value) {
-              url <- paste0("https://ebird.org/atlaspa/block/", value)
-              tags$a(href = url, target = "_blank", value)
-            }
+          pba3_block = colDef(name = "Block ID", cell = function(value) {
+            url <- paste0("https://ebird.org/atlaspa/block/", value)
+            tags$a(href = url, target = "_blank", value)
+          }),
+          block_name = colDef(
+            name = "Block name",
+            minWidth = 150
+          ),
+          block_region = colDef(
+            name = "Block region",
+            minWidth = 150
           ),
           common_name = colDef(name = "Common Name"),
           pba3_breeding_category_max = colDef(
