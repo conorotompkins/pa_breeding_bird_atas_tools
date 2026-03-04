@@ -79,7 +79,7 @@ ui <- page_navbar(
 
     nav_panel(
       "Atlas Comparison Table",
-      textInput(inputId = "block_choice", label = "Choose Block"),
+      textInput(inputId = "block_choice", label = "Enter Block ID"),
       reactableOutput("block_atlas_comparison_table")
     )
   ),
