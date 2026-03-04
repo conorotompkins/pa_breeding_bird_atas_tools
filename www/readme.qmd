@@ -3,15 +3,19 @@ title: "PBA3 Tools Documentation"
 format: html
 ---
 
-## Breeding Calendar
+## Breeding season calendar
 
 ### Calendar
 
 This table shows the breeding code calendar for each species. You can filter by Common Name and whether the species is Priority or not.
 
-### Safe Dates
+### Safe dates
 
 This table shows the "Safe Dates" for each species. It shows when the "Probable" and "Possible" time periods start and end.
+
+### Season glossary
+
+This shows the season descriptions used as guidelines for when to use which codes.
 
 ### Data sources
 
