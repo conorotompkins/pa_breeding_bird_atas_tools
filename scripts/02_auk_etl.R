@@ -3,6 +3,7 @@ library(auk)
 library(tictoc)
 library(sf)
 library(tools)
+library(arrow)
 
 auk_file <- "input/ebd_US-PA_202401_202601_smp_relJan-2026/ebd_US-PA_202401_202601_smp_relJan-2026.txt"
 
@@ -28,11 +29,24 @@ ebd <- auk_file |>
   # 4. read text file into r data frame
   read_ebd()
 toc()
-#944.459 sec elapsed
+#863.908 sec elapsed
 
 glimpse(ebd)
 
-write_delim(ebd, "input/pa_breeding_bird_atlas_processed.txt", delim = "\t")
+ebd <- ebd |>
+  mutate(breeding_code = str_squish(breeding_code)) |>
+  mutate(
+    observation_month = month(observation_date, label = TRUE, abbr = TRUE),
+    observation_datetime = str_c(
+      observation_date,
+      time_observations_started,
+      sep = " "
+    ) |>
+      ymd_hms(tz = "America/New_York")
+  ) |>
+  rename(pba3_block = atlas_block)
+
+write_parquet(ebd, "input/pa_breeding_bird_atlas_processed.parquet")
 
 ebd |> distinct(project_names)
 
