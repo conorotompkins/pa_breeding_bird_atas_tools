@@ -102,7 +102,8 @@ glimpse(location_sunrise_sunset)
 
 location_sunrise_sunset <- location_sunrise_sunset |>
   select(data, sunrise_sunset) |>
-  unnest(c(data, sunrise_sunset))
+  unnest(c(data, sunrise_sunset)) |>
+  select(-id)
 
 glimpse(location_sunrise_sunset)
 
