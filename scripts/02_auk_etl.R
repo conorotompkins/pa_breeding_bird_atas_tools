@@ -34,7 +34,8 @@ toc()
 glimpse(ebd)
 
 ebd <- ebd |>
-  mutate(breeding_code = str_squish(breeding_code)) |>
+  mutate(across(c(breeding_code, breeding_category), str_squish)) |>
+  mutate(breeding_category = coalesce(breeding_category, "C1")) |> #should this be C0 instead of C1?
   mutate(
     observation_month = month(observation_date, label = TRUE, abbr = TRUE),
     observation_datetime = str_c(
