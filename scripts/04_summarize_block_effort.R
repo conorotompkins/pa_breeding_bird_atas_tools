@@ -10,6 +10,8 @@ options(scipen = 999, digits = 4)
 
 theme_set(theme_bw())
 
+source("functions/mode.R")
+
 #block name lookup file
 block_name_lookup <- read_csv("input/block_name_lookup.csv") |>
   distinct(block_id, region, block_name) |>
@@ -113,6 +115,25 @@ ebd_df |>
   semi_join(dupe_start_times) |>
   mutate(across(everything(), as.character)) |>
   write_csv("~/Downloads/dupe_start_times.csv")
+
+#find modal start time per checklist. I will use that for all observers for each checklist.
+ob_dt_fixed <- ebd_df |>
+  distinct(
+    pba3_block,
+    checklist_id,
+    observer_id,
+    observation_datetime
+  ) |>
+  semi_join(dupe_start_times) |>
+  separate_longer_delim(observer_id, delim = ",") |>
+  mutate(
+    observation_datetime_fixed = mode(observation_datetime),
+    .by = checklist_id
+  ) |>
+  distinct(checklist_id, observation_datetime_fixed)
+
+ob_dt_fixed
+
 
 # ebd_df |>
 #   filter(is.na(pba3_block)) |>
@@ -512,56 +533,64 @@ summarize_season <- function(
     select(-breeding_rank) |>
     pivot_wider(names_from = breeding_category_desc, values_from = n)
 
-  # block_diurnal_nocturnal_effort_hours <- checklist_df |>
-  #   distinct(
-  #     checklist_id,
-  #     pba3_block,
-  #     latitude,
-  #     longitude,
-  #     observation_datetime,
-  #     sunrise,
-  #     sunset,
-  #     duration_minutes
-  #   ) |>
-  #   left_join(
-  #     location_sunrise_sunset,
-  #     by = join_by(
-  #       longitude,
-  #       latitude,
-  #       observation_datetime
-  #     )
-  #   ) |>
-  #   mutate(
-  #     flag_is_diurnal_checklist = between(
-  #       observation_datetime,
-  #       sunrise - minutes(40),
-  #       sunset + minutes(20)
-  #     )
-  #   ) |>
-  #   summarize(
-  #     duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
-  #     .by = c(pba3_block, flag_is_diurnal_checklist)
-  #   ) |>
-  #   mutate(
-  #     flag_is_diurnal_checklist = case_when(
-  #       flag_is_diurnal_checklist == TRUE ~ "duration_hours_diurnal",
-  #       flag_is_diurnal_checklist == FALSE ~ "duration_hours_nocturnal",
-  #       .default = "unknown"
-  #     )
-  #   ) |>
-  #   pivot_wider(
-  #     names_from = flag_is_diurnal_checklist,
-  #     values_from = duration_hours
-  #   ) |>
-  #   select(pba3_block, duration_hours_diurnal, duration_hours_nocturnal)
+  block_diurnal_nocturnal_effort_hours <- checklist_df |>
+    distinct(
+      pba3_block,
+      checklist_id,
+      observer_id,
+      observation_datetime,
+      longitude,
+      latitude,
+      duration_minutes
+    ) |>
+    left_join(ob_dt_fixed) |>
+    mutate(
+      observation_datetime = case_when(
+        !is.na(observation_datetime_fixed) ~ observation_datetime_fixed, #replace inconsistent start times with modal start time for the checklist
+        .default = observation_datetime
+      )
+    ) |>
+    select(-c(observation_datetime_fixed, observer_id)) |>
+    distinct() |>
+    left_join(
+      location_sunrise_sunset,
+      by = join_by(
+        longitude,
+        latitude,
+        observation_datetime
+      )
+    ) |>
+    mutate(
+      flag_is_diurnal_checklist = between(
+        observation_datetime,
+        sunrise - minutes(40),
+        sunset + minutes(20)
+      ),
+      checklist_type = case_when(
+        flag_is_diurnal_checklist == TRUE ~ "diurnal",
+        flag_is_diurnal_checklist == FALSE ~ "nocturnal",
+        is.na(flag_is_diurnal_checklist) ~ "unknown"
+      )
+    ) |>
+    select(-flag_is_diurnal_checklist) |>
+    summarize(
+      duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
+      .by = c(pba3_block, checklist_type)
+    ) |>
+    pivot_wider(
+      names_from = checklist_type,
+      values_from = duration_hours,
+      names_prefix = "hours_"
+    ) |>
+    select(pba3_block, hours_diurnal, hours_nocturnal, hours_unknown)
 
   df_list <- list(
     block_checklist_count,
     block_species_observed,
     block_birders,
     block_effort,
-    block_species_coded #,
-    #block_diurnal_nocturnal_effort_hours
+    block_species_coded,
+    block_diurnal_nocturnal_effort_hours
   )
 
   block_summary <- reduce(df_list, left_join, by = "pba3_block")
@@ -642,7 +671,7 @@ glimpse(block_summary_seasons)
 
 block_summary_seasons |>
   filter(season == "All seasons") |>
-  maplibre_view(column = "duration_hours_nocturnal")
+  maplibre_view(column = "hours_diurnal")
 
 block_summary_seasons |>
   ggplot() +
