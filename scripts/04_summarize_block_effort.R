@@ -580,9 +580,14 @@ summarize_season <- function(
     pivot_wider(
       names_from = checklist_type,
       values_from = duration_hours,
-      names_prefix = "hours_"
+      names_prefix = "duration_hours_"
     ) |>
-    select(pba3_block, hours_diurnal, hours_nocturnal, hours_unknown)
+    select(
+      pba3_block,
+      duration_hours_diurnal,
+      duration_hours_nocturnal,
+      duration_hours_unknown
+    )
 
   df_list <- list(
     block_checklist_count,
@@ -671,7 +676,7 @@ glimpse(block_summary_seasons)
 
 block_summary_seasons |>
   filter(season == "All seasons") |>
-  maplibre_view(column = "hours_diurnal")
+  maplibre_view(column = "duration_hours_diurnal")
 
 block_summary_seasons |>
   ggplot() +
