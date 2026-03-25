@@ -108,7 +108,7 @@ block_summary <- read_parquet(
   as_data_frame = FALSE
 ) |>
   mutate(
-    duration_hours = round(duration_hours, 2),
+    duration_hours_total = round(duration_hours_total, 2),
     effort_distance_km = round(effort_distance_km, 2)
   ) |>
   select(
@@ -123,7 +123,10 @@ block_summary <- read_parquet(
     Confirmed,
     checklist_count,
     birders,
-    duration_hours,
+    duration_hours_total,
+    duration_hours_diurnal,
+    duration_hours_nocturnal,
+    duration_hours_unknown,
     effort_distance_km,
     pct_missing_pba2_confirmations,
     geometry
@@ -292,7 +295,26 @@ server <- function(input, output) {
           checklist_count = colDef(name = "Checklists", minWidth = 100),
           species_observed = colDef(name = "Total species", minWidth = 120),
           birders = colDef(name = "Atlasers", minWidth = 100),
-          duration_hours = colDef(name = "Effort hours", minWidth = 150),
+          duration_hours_total = colDef(
+            name = "Total",
+            format = colFormat(digits = 2),
+            minWidth = 150
+          ),
+          duration_hours_diurnal = colDef(
+            name = "Diurnal",
+            format = colFormat(digits = 2),
+            minWidth = 150
+          ),
+          duration_hours_nocturnal = colDef(
+            name = "Nocturnal",
+            format = colFormat(digits = 2),
+            minWidth = 150
+          ),
+          duration_hours_unknown = colDef(
+            name = "Unknown",
+            format = colFormat(digits = 2),
+            minWidth = 150
+          ),
           effort_distance_km = colDef(
             name = "Effort distance (km)",
             minWidth = 175
@@ -303,7 +325,16 @@ server <- function(input, output) {
             minWidth = 300
           )
         ),
-        defaultPageSize = 15
+        defaultPageSize = 15,
+        columnGroups = list(colGroup(
+          name = "Effort hours",
+          columns = c(
+            "duration_hours_total",
+            "duration_hours_diurnal",
+            "duration_hours_nocturnal",
+            "duration_hours_unknown"
+          )
+        ))
       )
   })
 
