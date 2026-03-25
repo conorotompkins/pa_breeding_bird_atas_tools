@@ -209,7 +209,11 @@ server <- function(input, output) {
 
   output$calendar <- renderReactable({
     breeding_calendar() |>
-      reactable(columns = breeding_table_formatting(), defaultPageSize = 15)
+      reactable(
+        columns = breeding_table_formatting(),
+        defaultPageSize = 15,
+        showPageInfo = FALSE
+      )
   })
 
   output$dates_table <- renderReactable({

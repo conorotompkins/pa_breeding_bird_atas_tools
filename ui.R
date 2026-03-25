@@ -19,7 +19,7 @@ ui <- page_navbar(
     nav_panel(
       "Calendar",
 
-      card(reactableOutput(outputId = "calendar"))
+      card(reactableOutput(outputId = "calendar"), full_screen = TRUE)
     ),
 
     nav_panel(
