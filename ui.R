@@ -19,13 +19,13 @@ ui <- page_navbar(
     nav_panel(
       "Calendar",
 
-      card(reactableOutput(outputId = "calendar"))
+      card(reactableOutput(outputId = "calendar"), full_screen = TRUE)
     ),
 
     nav_panel(
       "Safe Dates",
 
-      card(reactableOutput("dates_table"))
+      card(reactableOutput("dates_table"), full_screen = TRUE)
     ),
 
     nav_panel(
@@ -130,6 +130,11 @@ ui <- page_navbar(
           inputId = "toggle_exclude_na_code",
           label = "Exclude birds with no code in first month",
           value = TRUE
+        ),
+        materialSwitch(
+          inputId = "toggle_show_priority_column",
+          label = "Show priority column",
+          value = FALSE
         )
       ),
       accordion_panel(
