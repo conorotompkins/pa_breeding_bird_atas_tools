@@ -25,7 +25,7 @@ ui <- page_navbar(
     nav_panel(
       "Safe Dates",
 
-      card(reactableOutput("dates_table"))
+      card(reactableOutput("dates_table"), full_screen = TRUE)
     ),
 
     nav_panel(

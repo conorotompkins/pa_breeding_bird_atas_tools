@@ -264,7 +264,7 @@ server <- function(input, output) {
           cell = function(value) strftime(value, "%b %e")
         )
       ),
-      defaultPageSize = 15
+      pagination = FALSE
     )
   })
 
