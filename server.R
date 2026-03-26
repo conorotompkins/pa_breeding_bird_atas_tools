@@ -210,8 +210,7 @@ server <- function(input, output) {
         filterable = TRUE,
         sticky = "left",
         style = list(borderRight = "2px solid #eee"),
-        headerStyle = list(borderRight = "1px solid #eee"),
-        minWidth = 200
+        headerStyle = list(borderRight = "1px solid #eee")
       )
     )
 
