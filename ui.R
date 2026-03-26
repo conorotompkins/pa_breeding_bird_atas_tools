@@ -130,6 +130,11 @@ ui <- page_navbar(
           inputId = "toggle_exclude_na_code",
           label = "Exclude birds with no code in first month",
           value = TRUE
+        ),
+        materialSwitch(
+          inputId = "toggle_show_priority_column",
+          label = "Show priority column",
+          value = FALSE
         )
       ),
       accordion_panel(

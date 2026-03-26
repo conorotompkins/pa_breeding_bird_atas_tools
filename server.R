@@ -10,6 +10,8 @@ library(tictoc)
 library(santoku)
 library(mapgl)
 
+options(shiny.fullstacktrace = FALSE)
+
 ####ebird release
 ebird_release <- read_file("input/ebird_release.txt")
 
@@ -146,7 +148,11 @@ server <- function(input, output) {
     as.character()
 
   breeding_calendar <- eventReactive(
-    c(input$toggle_current_month, input$toggle_exclude_na_code),
+    c(
+      input$toggle_current_month,
+      input$toggle_exclude_na_code,
+      input$toggle_show_priority_column
+    ),
     {
       #filter with input$toggle_current_month
       x <- if (input$toggle_current_month) {
@@ -161,6 +167,12 @@ server <- function(input, output) {
           select(-year_week_index)
       } else if (input$toggle_current_month == FALSE) {
         breeding_calendar_long
+      }
+
+      x <- if (input$toggle_show_priority_column) {
+        x
+      } else {
+        select(x, -priority_species)
       }
 
       #pivot wider at the end
@@ -185,7 +197,7 @@ server <- function(input, output) {
   breeding_table_formatting <- reactive({
     #formatting for calendar
     month_cols <- breeding_calendar() |>
-      select(-c(1:2)) |>
+      select(-any_of(c("common_name", "priority_species"))) |>
       names()
 
     breeding_col_styles <- map(month_cols, breeding_color_formatting)
@@ -200,9 +212,18 @@ server <- function(input, output) {
         style = list(borderRight = "2px solid #eee"),
         headerStyle = list(borderRight = "1px solid #eee"),
         minWidth = 200
-      ),
-      priority_species = colDef("Priority", filterable = TRUE)
+      )
     )
+
+    other_cols <- if (input$toggle_show_priority_column) {
+      priority_col <- list(
+        priority_species = colDef("Priority", filterable = TRUE)
+      )
+
+      c(other_cols, priority_col)
+    } else {
+      other_cols
+    }
 
     c(other_cols, breeding_col_styles)
   })
