@@ -232,8 +232,7 @@ server <- function(input, output) {
     breeding_calendar() |>
       reactable(
         columns = breeding_table_formatting(),
-        defaultPageSize = 15,
-        showPageInfo = FALSE
+        pagination = FALSE
       )
   })
 
