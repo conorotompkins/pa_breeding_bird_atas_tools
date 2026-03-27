@@ -1,0 +1,52 @@
+---
+title: "Block report"
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: article
+params:
+  block_id: "40080D1SE"    # will be overridden from Shiny
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+```{r}
+# Load packages (tidyverse for data work)
+library(tidyverse)
+library(arrow)
+library(gt)
+
+data_path <- "input/block_summary_seasons.parquet"
+
+# Read in full project data, then filter down to a single block
+block_id <- params$block_id
+
+bird_df <- open_dataset(data_path) |>
+  filter(pba3_block == !!block_id) |> 
+  #filter(pba3_block == "40080D1SE") |> 
+  collect()
+```
+
+```{r}
+bird_df |> 
+  select(Confirmed, Probable, Possible, Observed) |> 
+  gt()
+```
+
+```{r}
+bird_df |> 
+  select(duration_hours_total, 
+  duration_hours_diurnal,
+  duration_hours_nocturnal,
+  duration_hours_unknown) |> 
+  gt()
+```
+
+```{r}
+
+```
+```{r}
+
+```
