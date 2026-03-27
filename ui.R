@@ -54,7 +54,9 @@ ui <- page_navbar(
           inputId = "block_variable",
           label = "Variable",
           choices = c(
-            "Effort hours" = "duration_hours",
+            "Effort hours (total)" = "duration_hours_total",
+            "Effort hours (diurnal)" = "duration_hours_diurnal",
+            "Effort hours (nocturnal)" = "duration_hours_nocturnal",
             "Confirmed species" = "Confirmed"
           )
         )
