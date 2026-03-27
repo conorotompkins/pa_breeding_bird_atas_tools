@@ -5,7 +5,7 @@ library(sf)
 library(tools)
 library(arrow)
 
-auk_file <- "input/ebd_US-PA_202401_202601_smp_relJan-2026/ebd_US-PA_202401_202601_smp_relJan-2026.txt"
+auk_file <- "input/ebd_US-PA_202401_202602_smp_relFeb-2026/ebd_US-PA_202401_202602_smp_relFeb-2026.txt"
 
 file.exists(auk_file) == TRUE
 
@@ -29,7 +29,7 @@ ebd <- auk_file |>
   # 4. read text file into r data frame
   read_ebd()
 toc()
-#863.908 sec elapsed
+# 901.116 sec elapsed
 
 glimpse(ebd)
 
