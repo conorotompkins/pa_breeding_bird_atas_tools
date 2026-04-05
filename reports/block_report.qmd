@@ -3,10 +3,13 @@ title: "Block report"
 format:
   html:
     theme: cosmo
+    embed-resources: true
   pdf:
     documentclass: article
+project:
+  execute-dir: project
 params:
-  block_id: "40080D1SE"    # will be overridden from Shiny
+  block_id: "40080D1SE"
   season: "All seasons"
 execute:
   echo: false
@@ -15,6 +18,7 @@ execute:
 ---
 
 ```{r}
+#| label: setup
 # Load packages (tidyverse for data work)
 library(tidyverse)
 library(arrow)
@@ -24,25 +28,21 @@ library(basemaps)
 
 source("R/plot_checklist_coords.R")
 
-data_path <- "input/block_summary_seasons.parquet"
-
 # Read in full project data, then filter down to a single block
-block_id_param <- params$block_id
-season_param <- params$season
 
-bird_df <- open_dataset(data_path) |>
-  filter(pba3_block == !!block_id_param, season == !!season_param) |>
+bird_df <- open_dataset("data/block_summary_seasons.parquet") |>
+  filter(pba3_block == params$block_id, season == params$season) |>
   collect() |>
   st_drop_geometry()
 
-ebd_df <- open_dataset("input/pa_breeding_bird_atlas_processed.parquet") |>
-  filter(pba3_block == !!block_id_param) |>
+ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet") |>
+  filter(pba3_block == params$block_id) |>
   collect()
 
 report_block_name <- ebd_df$block_name
 ```
 
-## `{r} report_block_name` (`{r} block_id_param`)
+## `{r} params$block_id` for season "`{r} params$season`"
 
 ### Species code summary
 
