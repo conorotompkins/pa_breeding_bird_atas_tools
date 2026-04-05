@@ -9,14 +9,15 @@ library(geoarrow)
 library(tictoc)
 library(santoku)
 library(mapgl)
+library(quarto)
 
 options(shiny.fullstacktrace = FALSE)
 
 ####ebird release
-ebird_release <- read_file("input/ebird_release.txt")
+ebird_release <- read_file("data/ebird_release.txt")
 
 ####breeding bird calendar
-breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
+breeding_calendar_raw <- read_csv("data/breeding_calendar.csv")
 
 breeding_calendar_long <- breeding_calendar_raw |>
   mutate(across(everything(), \(x) replace_na(x, ""))) |>
@@ -84,7 +85,7 @@ format_date <- function(x) {
   str_c(current_year, "-", x) |> ydm()
 }
 
-safe_dates <- read_csv("input/bird_safe_dates.csv") |>
+safe_dates <- read_csv("data/bird_safe_dates.csv") |>
   select(
     common_name,
     safe_date_probable_start,
@@ -106,7 +107,7 @@ safe_dates <- read_csv("input/bird_safe_dates.csv") |>
 
 ####block effort
 block_summary <- read_parquet(
-  "input/block_summary_seasons.parquet",
+  "data/block_summary_seasons.parquet",
   as_data_frame = FALSE
 ) |>
   mutate(
@@ -137,13 +138,11 @@ block_summary <- read_parquet(
 
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
-  "input/missing_pba2_breeding_category_obs.parquet"
+  "data/missing_pba2_breeding_category_obs.parquet"
 )
 
-#glimpse(missing_pba2_breeding_category_obs)
-
 # Define server logic required to draw a histogram ----
-server <- function(input, output) {
+server <- function(input, output, session) {
   current_month <- month(Sys.Date(), label = TRUE, abbr = TRUE) |>
     as.character()
 
@@ -421,4 +420,52 @@ server <- function(input, output) {
   output$ebird_release <- renderUI({
     str_c("Data includes checklists from Jan-2024 to", ebird_release, sep = " ")
   })
+
+  report_filename <- reactive({
+    paste0(
+      "pba3_atlas_block_report_",
+      input$block_id,
+      "_",
+      input$season,
+      ".",
+      input$report_format
+    ) |>
+      str_replace_all(" ", "_")
+  })
+
+  #logic for block report
+  output$download_report <- downloadHandler(
+    filename = \() {
+      report_filename()
+    },
+    content = \(file) {
+      project_dir <- normalizePath(".")
+      report_path <- file.path(project_dir, "reports", "block_report.qmd")
+      report_dir <- dirname(report_path)
+      out_name <- report_filename()
+      out_path <- file.path(report_dir, out_name)
+
+      old <- setwd(project_dir)
+      on.exit(setwd(old), add = TRUE)
+
+      quarto::quarto_render(
+        input = report_path,
+        output_format = input$report_format,
+        output_file = out_name,
+        execute_params = list(block_id = input$block_id, season = input$season),
+        execute_dir = project_dir,
+        quiet = FALSE
+      )
+
+      file.copy(out_path, file, overwrite = TRUE)
+
+      if (dir.exists(file.path(report_dir, "block_report_files"))) {
+        unlink(file.path(report_dir, "block_report_files"), recursive = TRUE)
+      }
+
+      if (file.exists(out_path)) {
+        unlink(out_path)
+      }
+    }
+  )
 }

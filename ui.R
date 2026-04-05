@@ -81,6 +81,48 @@ ui <- page_navbar(
       "Atlas Comparison Table",
       textInput(inputId = "block_choice", label = "Enter Block ID"),
       reactableOutput("block_atlas_comparison_table")
+    ),
+
+    nav_panel(
+      "Block report",
+      layout_sidebar(
+        # sidebar + main content
+        sidebar = sidebar(
+          open = TRUE,
+          width = 300,
+          title = "Generate a report for a block",
+
+          # User chooses their 3×3 km block
+          selectInput(
+            inputId = "block_id",
+            label = "Block ID",
+            choices = c("40080D1SE")
+          ),
+
+          selectInput(
+            inputId = "season",
+            label = "Season",
+            choices = c("All seasons")
+          ),
+
+          selectInput(
+            "report_format",
+            "Format",
+            choices = c("html", "pdf"),
+            selected = "html"
+          ),
+          downloadButton("download_report", "Download report"),
+        ),
+
+        # Main area: HTML report preview
+        # card(
+        #   full_screen = TRUE,
+        #   card_header("Block progress report"),
+        #   verbatimTextOutput("file_paths"),
+        #   # We'll embed the rendered HTML report here via an iframe
+        #   uiOutput("report_frame")
+        # )
+      )
     )
   ),
 
