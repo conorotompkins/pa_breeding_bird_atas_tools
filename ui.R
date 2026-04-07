@@ -4,6 +4,7 @@ library(bsicons)
 library(reactable)
 library(shinyWidgets)
 library(mapgl)
+library(gt)
 
 ui <- page_navbar(
   fillable_mobile = TRUE,
