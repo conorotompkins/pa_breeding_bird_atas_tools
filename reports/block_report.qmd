@@ -5,7 +5,7 @@ format:
     theme: cosmo
     embed-resources: true
   pdf:
-    documentclass: article
+    documentclass: report
 format-links: false
 project:
   execute-dir: project
