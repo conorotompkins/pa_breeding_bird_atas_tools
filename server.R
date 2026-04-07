@@ -10,8 +10,12 @@ library(tictoc)
 library(santoku)
 library(mapgl)
 library(quarto)
+library(gt)
+library(basemaps)
 
 options(shiny.fullstacktrace = FALSE)
+
+set_defaults(map_service = "esri", map_type = "natgeo_world_map")
 
 ####ebird release
 ebird_release <- read_file("data/ebird_release.txt")
@@ -468,4 +472,29 @@ server <- function(input, output, session) {
       }
     }
   )
+
+  bird_df_summary <- reactive({
+    open_dataset("data/block_summary_seasons.parquet") |>
+      filter(pba3_block == input$block_id, season == input$season) |>
+      collect() |>
+      st_drop_geometry()
+  })
+
+  ebd_df_summary <- reactive({
+    open_dataset("data/pa_breeding_bird_atlas_processed.parquet") |>
+      filter(pba3_block == input$block_id) |>
+      collect()
+  })
+
+  output$summary_effort <- render_gt({
+    summarize_effort(bird_df_summary())
+  })
+
+  output$summary_breeding_codes <- render_gt({
+    summarize_breeding_codes(bird_df_summary())
+  })
+
+  output$summary_checklist_map <- renderPlot({
+    plot_checklist_coords(ebd_df_summary())
+  })
 }

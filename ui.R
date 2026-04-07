@@ -114,14 +114,15 @@ ui <- page_navbar(
           downloadButton("download_report", "Download report"),
         ),
 
-        # Main area: HTML report preview
-        # card(
-        #   full_screen = TRUE,
-        #   card_header("Block progress report"),
-        #   verbatimTextOutput("file_paths"),
-        #   # We'll embed the rendered HTML report here via an iframe
-        #   uiOutput("report_frame")
-        # )
+        card(
+          full_screen = TRUE,
+          card_header("Block progress report"),
+          layout_columns(
+            gt_output("summary_effort"),
+            gt_output("summary_breeding_codes")
+          ),
+          plotOutput("summary_checklist_map")
+        )
       )
     )
   ),
