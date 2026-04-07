@@ -14,7 +14,7 @@ daemons(n = 10)
 
 #checklists
 tic()
-ebd_df <- read_parquet("input/pa_breeding_bird_atlas_processed.parquet")
+ebd_df <- read_parquet("data/pa_breeding_bird_atlas_processed.parquet")
 toc()
 
 glimpse(ebd_df)
@@ -119,9 +119,9 @@ attr(location_sunrise_sunset$sunset, "tzone")
 
 expected_tz <- attr(location_sunrise_sunset$observation_datetime, "tzone")
 
-write_parquet(location_sunrise_sunset, "input/location_sunrise_sunset.parquet")
+write_parquet(location_sunrise_sunset, "data/location_sunrise_sunset.parquet")
 
-location_sunrise_sunset <- read_parquet("input/location_sunrise_sunset.parquet")
+location_sunrise_sunset <- read_parquet("data/location_sunrise_sunset.parquet")
 
 attr(location_sunrise_sunset$observation_datetime, "tzone") == expected_tz
 attr(location_sunrise_sunset$sunrise, "tzone") == expected_tz
