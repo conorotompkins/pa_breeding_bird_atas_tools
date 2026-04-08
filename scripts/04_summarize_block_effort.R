@@ -360,6 +360,8 @@ seasons <- tibble(
 
 seasons
 
+write_parquet(seasons, "data/seasons.parquet")
+
 glimpse(ebd_df)
 
 #compare block breeding rank between PBA2 and PBA3
