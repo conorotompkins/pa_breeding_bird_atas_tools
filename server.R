@@ -141,6 +141,9 @@ block_summary <- open_dataset(
 
 ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
 
+seasons <- open_dataset("data/seasons.parquet") |>
+  collect()
+
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
   "data/missing_pba2_breeding_category_obs.parquet"
@@ -497,7 +500,15 @@ server <- function(input, output, session) {
     summarize_breeding_codes(bird_df_summary())
   })
 
-  output$summary_checklist_map <- renderPlot({
-    plot_checklist_coords(ebd_df_summary())
+  output$summary_checklist_map <- renderMaplibre({
+    ebd_df_summary() |>
+      filter(pba3_block == input$block_id) |>
+      collect() |>
+      semi_join(seasons, by = c("observation_month" = "month")) |>
+      distinct(checklist_id, observation_month, longitude, latitude) |>
+      collect() |>
+      count(longitude, latitude, name = "checklist_count") |>
+      st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+      map_checklist_count()
   })
 }

@@ -122,7 +122,7 @@ ui <- page_navbar(
             gt_output("summary_effort"),
             gt_output("summary_breeding_codes")
           ),
-          plotOutput("summary_checklist_map")
+          maplibreOutput("summary_checklist_map")
         )
       )
     )
