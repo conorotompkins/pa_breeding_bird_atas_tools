@@ -110,9 +110,8 @@ safe_dates <- read_csv("data/bird_safe_dates.csv") |>
   arrange(date_probable_start)
 
 ####block effort
-block_summary <- read_parquet(
-  "data/block_summary_seasons.parquet",
-  as_data_frame = FALSE
+block_summary <- open_dataset(
+  "data/block_summary_seasons.parquet"
 ) |>
   mutate(
     duration_hours_total = round(duration_hours_total, 2),
@@ -139,6 +138,8 @@ block_summary <- read_parquet(
     geometry
   ) |>
   st_as_sf()
+
+ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
 
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
@@ -281,7 +282,8 @@ server <- function(input, output, session) {
   #block effort map
   output$block_effort_map <- renderMaplibre({
     block_summary <- block_summary |>
-      filter(season == input$season_variable)
+      filter(season == input$season_variable) |>
+      collect()
 
     maplibre_view(
       block_summary,
@@ -295,6 +297,7 @@ server <- function(input, output, session) {
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
       arrange(block_region, block_name) |>
+      collect() |>
       reactable(
         resizable = TRUE,
         columns = list(
@@ -474,14 +477,14 @@ server <- function(input, output, session) {
   )
 
   bird_df_summary <- reactive({
-    open_dataset("data/block_summary_seasons.parquet") |>
+    block_summary |>
       filter(pba3_block == input$block_id, season == input$season) |>
       collect() |>
       st_drop_geometry()
   })
 
   ebd_df_summary <- reactive({
-    open_dataset("data/pa_breeding_bird_atlas_processed.parquet") |>
+    ebd_df |>
       filter(pba3_block == input$block_id) |>
       collect()
   })

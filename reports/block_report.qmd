@@ -33,7 +33,7 @@ source("R/summarize_effort.R")
 
 # Read in full project data, then filter down to a single block
 
-bird_df <- open_dataset("data/block_summary_seasons.parquet") |>
+block_summary <- open_dataset("data/block_summary_seasons.parquet") |>
   filter(pba3_block == params$block_id, season == params$season) |>
   collect() |>
   st_drop_geometry()
@@ -50,13 +50,13 @@ report_block_name <- ebd_df$block_name
 ### Species code summary
 
 ```{r}
-summarize_breeding_codes(bird_df)
+summarize_breeding_codes(block_summary)
 ```
 
 ### Effort summary
 
 ```{r}
-summarize_effort(bird_df)
+summarize_effort(block_summary)
 ```
 
 ```{r}
