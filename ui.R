@@ -93,7 +93,7 @@ ui <- page_navbar(
           width = 300,
           title = "Generate a report for a block",
 
-          selectInput(
+          selectizeInput(
             inputId = "report_block_id",
             label = "Block ID",
             choices = c("40080D1SE", "39077G6SW")

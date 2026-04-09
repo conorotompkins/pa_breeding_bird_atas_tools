@@ -7,7 +7,6 @@ library(sf)
 library(arrow)
 library(geoarrow)
 library(tictoc)
-library(santoku)
 library(mapgl)
 library(quarto)
 library(gt)
@@ -138,6 +137,20 @@ block_summary <- open_dataset(
     geometry
   ) |>
   st_as_sf()
+
+#pba3_blocks <- block_summary |> distinct(pba3_block) |> pull()
+
+pba3_region_block_hierarchy <- block_summary |>
+  distinct(block_region, pba3_block) |>
+  filter(block_region != "Unknown region") |>
+  arrange(block_region, pba3_block)
+
+pba3_region_block_hierarchy <- pba3_region_block_hierarchy |>
+  group_by(block_region) |>
+  group_map(~ set_names(.x$pba3_block, .x$pba3_block)) |>
+  set_names(unique(
+    arrange(pba3_region_block_hierarchy, block_region)$block_region
+  ))
 
 ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
 
@@ -480,6 +493,19 @@ server <- function(input, output, session) {
   #   }
   # )
 
+  observeEvent(1, {
+    new_choices <- pba3_region_block_hierarchy
+
+    # Can also set the label and select items
+    updateSelectizeInput(
+      session,
+      "report_block_id",
+      choices = new_choices,
+      selected = pba3_region_block_hierarchy |>
+        pluck(1, 1)
+    )
+  })
+
   bird_df_summary <- reactive({
     block_summary |>
       filter(
@@ -509,6 +535,8 @@ server <- function(input, output, session) {
   })
 
   output$summary_checklist_map <- renderMaplibre({
+    req(input$report_block_id, input$report_season)
+
     ebd_df_summary() |>
       distinct(checklist_id, longitude, latitude) |>
       count(longitude, latitude, name = "checklist_count") |>
