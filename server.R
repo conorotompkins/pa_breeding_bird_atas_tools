@@ -141,13 +141,13 @@ block_summary <- open_dataset(
 #pba3_blocks <- block_summary |> distinct(pba3_block) |> pull()
 
 pba3_region_block_hierarchy <- block_summary |>
-  distinct(block_region, pba3_block) |>
+  distinct(block_region, pba3_block, block_name) |>
   filter(block_region != "Unknown region") |>
   arrange(block_region, pba3_block)
 
 pba3_region_block_hierarchy <- pba3_region_block_hierarchy |>
   group_by(block_region) |>
-  group_map(~ set_names(.x$pba3_block, .x$pba3_block)) |>
+  group_map(~ set_names(.x$pba3_block, .x$block_name)) |>
   set_names(unique(
     arrange(pba3_region_block_hierarchy, block_region)$block_region
   ))
