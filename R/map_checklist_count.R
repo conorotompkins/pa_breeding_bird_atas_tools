@@ -50,6 +50,7 @@ map_checklist_count <- function(x) {
       colors = rep("#1f78b4", length(circle_sizes)),
       type = "categorical",
       sizes = circle_sizes,
-      position = "top-right"
+      position = "top-right",
+      patch_shape = "circle"
     )
 }
