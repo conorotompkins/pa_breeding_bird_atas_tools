@@ -94,13 +94,13 @@ ui <- page_navbar(
           title = "Generate a report for a block",
 
           selectInput(
-            inputId = "block_id",
+            inputId = "report_block_id",
             label = "Block ID",
             choices = c("40080D1SE", "39077G6SW")
           ),
 
           selectInput(
-            inputId = "season",
+            inputId = "report_season",
             label = "Season",
             choices = c("All seasons", "Breeding", "Winter")
           ),

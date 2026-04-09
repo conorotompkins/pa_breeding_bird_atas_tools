@@ -436,9 +436,9 @@ server <- function(input, output, session) {
   # report_filename <- reactive({
   #   paste0(
   #     "pba3_atlas_block_report_",
-  #     input$block_id,
+  #     input$report_block_id,
   #     "_",
-  #     input$season,
+  #     input$report_season,
   #     ".",
   #     input$report_format
   #   ) |>
@@ -463,7 +463,7 @@ server <- function(input, output, session) {
   #       input = report_path,
   #       output_format = input$report_format,
   #       output_file = out_name,
-  #       execute_params = list(block_id = input$block_id, season = input$season),
+  #       execute_params = list(block_id = input$report_block_id, season = input$report_season),
   #       execute_dir = project_dir,
   #       quiet = FALSE
   #     )
@@ -482,17 +482,20 @@ server <- function(input, output, session) {
 
   bird_df_summary <- reactive({
     block_summary |>
-      filter(pba3_block == input$block_id, season == input$season) |>
+      filter(
+        pba3_block == input$report_block_id,
+        season == input$report_season
+      ) |>
       collect() |>
       st_drop_geometry()
   })
 
   ebd_df_summary <- reactive({
     seasons_filtered <- seasons |>
-      filter(season == input$season)
+      filter(season == input$report_season)
 
     ebd_df |>
-      filter(pba3_block == input$block_id) |>
+      filter(pba3_block == input$report_block_id) |>
       collect() |>
       semi_join(seasons_filtered, by = c("observation_month" = "month"))
   })
