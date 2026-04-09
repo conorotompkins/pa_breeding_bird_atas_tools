@@ -93,26 +93,25 @@ ui <- page_navbar(
           width = 300,
           title = "Generate a report for a block",
 
-          # User chooses their 3×3 km block
           selectInput(
             inputId = "block_id",
             label = "Block ID",
-            choices = c("40080D1SE")
+            choices = c("40080D1SE", "39077G6SW")
           ),
 
           selectInput(
             inputId = "season",
             label = "Season",
-            choices = c("All seasons")
+            choices = c("All seasons", "Breeding", "Winter")
           ),
 
-          selectInput(
-            "report_format",
-            "Format",
-            choices = c("html", "pdf"),
-            selected = "html"
-          ),
-          downloadButton("download_report", "Download report"),
+          # selectInput(
+          #   "report_format",
+          #   "Format",
+          #   choices = c("html", "pdf"),
+          #   selected = "html"
+          # ),
+          # downloadButton("download_report", "Download report"),
         ),
 
         card(

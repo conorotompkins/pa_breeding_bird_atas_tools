@@ -431,53 +431,54 @@ server <- function(input, output, session) {
     str_c("Data includes checklists from Jan-2024 to", ebird_release, sep = " ")
   })
 
-  report_filename <- reactive({
-    paste0(
-      "pba3_atlas_block_report_",
-      input$block_id,
-      "_",
-      input$season,
-      ".",
-      input$report_format
-    ) |>
-      str_replace_all(" ", "_")
-  })
+  #logic for block report export
+  #not in scope right now due to memory contraint in free tier of Posit Connect Cloud
+  # report_filename <- reactive({
+  #   paste0(
+  #     "pba3_atlas_block_report_",
+  #     input$block_id,
+  #     "_",
+  #     input$season,
+  #     ".",
+  #     input$report_format
+  #   ) |>
+  #     str_replace_all(" ", "_")
+  # })
 
-  #logic for block report
-  output$download_report <- downloadHandler(
-    filename = \() {
-      report_filename()
-    },
-    content = \(file) {
-      project_dir <- normalizePath(".")
-      report_path <- file.path(project_dir, "reports", "block_report.qmd")
-      report_dir <- dirname(report_path)
-      out_name <- report_filename()
-      out_path <- file.path(report_dir, out_name)
+  # output$download_report <- downloadHandler(
+  #   filename = \() {
+  #     report_filename()
+  #   },
+  #   content = \(file) {
+  #     project_dir <- normalizePath(".")
+  #     report_path <- file.path(project_dir, "reports", "block_report.qmd")
+  #     report_dir <- dirname(report_path)
+  #     out_name <- report_filename()
+  #     out_path <- file.path(report_dir, out_name)
 
-      old <- setwd(project_dir)
-      on.exit(setwd(old), add = TRUE)
+  #     old <- setwd(project_dir)
+  #     on.exit(setwd(old), add = TRUE)
 
-      quarto::quarto_render(
-        input = report_path,
-        output_format = input$report_format,
-        output_file = out_name,
-        execute_params = list(block_id = input$block_id, season = input$season),
-        execute_dir = project_dir,
-        quiet = FALSE
-      )
+  #     quarto::quarto_render(
+  #       input = report_path,
+  #       output_format = input$report_format,
+  #       output_file = out_name,
+  #       execute_params = list(block_id = input$block_id, season = input$season),
+  #       execute_dir = project_dir,
+  #       quiet = FALSE
+  #     )
 
-      file.copy(out_path, file, overwrite = TRUE)
+  #     file.copy(out_path, file, overwrite = TRUE)
 
-      if (dir.exists(file.path(report_dir, "block_report_files"))) {
-        unlink(file.path(report_dir, "block_report_files"), recursive = TRUE)
-      }
+  #     if (dir.exists(file.path(report_dir, "block_report_files"))) {
+  #       unlink(file.path(report_dir, "block_report_files"), recursive = TRUE)
+  #     }
 
-      if (file.exists(out_path)) {
-        unlink(out_path)
-      }
-    }
-  )
+  #     if (file.exists(out_path)) {
+  #       unlink(out_path)
+  #     }
+  #   }
+  # )
 
   bird_df_summary <- reactive({
     block_summary |>
@@ -487,9 +488,13 @@ server <- function(input, output, session) {
   })
 
   ebd_df_summary <- reactive({
+    seasons_filtered <- seasons |>
+      filter(season == input$season)
+
     ebd_df |>
       filter(pba3_block == input$block_id) |>
-      collect()
+      collect() |>
+      semi_join(seasons_filtered, by = c("observation_month" = "month"))
   })
 
   output$summary_effort <- render_gt({
@@ -502,11 +507,7 @@ server <- function(input, output, session) {
 
   output$summary_checklist_map <- renderMaplibre({
     ebd_df_summary() |>
-      filter(pba3_block == input$block_id) |>
-      collect() |>
-      semi_join(seasons, by = c("observation_month" = "month")) |>
-      distinct(checklist_id, observation_month, longitude, latitude) |>
-      collect() |>
+      distinct(checklist_id, longitude, latitude) |>
       count(longitude, latitude, name = "checklist_count") |>
       st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
       map_checklist_count()

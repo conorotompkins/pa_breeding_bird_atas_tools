@@ -9,27 +9,32 @@ map_checklist_count <- function(x) {
 
     x <- exp(seq(log(start), log(end), length.out = length))
 
-    round(x, 0)
+    x <- round(x, 0)
   }
 
   count_range <- exp_seq(
     min(x$checklist_count),
     max(x$checklist_count),
     length = 10
+  ) |>
+    unique()
+
+  circle_sizes <- exp_seq(
+    3,
+    15,
+    length(count_range)
   )
 
-  count_range
-
-  circle_sizes <- seq(2, 10, length.out = length(count_range))
+  bounds_sf <- st_buffer(x, 1000)
 
   maplibre() |>
-    fit_bounds(x, animate = FALSE) |>
+    fit_bounds(bounds_sf, animate = FALSE) |>
     add_circle_layer(
       id = "count-circles",
       source = x,
       circle_radius = step_expr(
         column = "checklist_count",
-        base = circle_sizes[1],
+        base = 2,
         values = count_range,
         stops = circle_sizes
       ),
