@@ -6,6 +6,14 @@ library(shinyWidgets)
 library(mapgl)
 library(gt)
 
+completion_criteria_value_boxes <- list(
+  value_box(title = "Completion criterion 1", value = 1),
+  value_box(title = "Completion criterion 2", value = 2),
+  value_box(title = "Completion criterion 3", value = 3),
+  value_box(title = "Completion criterion 4", value = 4),
+  value_box(title = "Completion criterion 5", value = 5)
+)
+
 ui <- page_navbar(
   fillable_mobile = TRUE,
 
@@ -85,7 +93,7 @@ ui <- page_navbar(
     ),
 
     nav_panel(
-      "Block report",
+      "Block progress report",
       layout_sidebar(
         # sidebar + main content
         sidebar = sidebar(
@@ -114,14 +122,15 @@ ui <- page_navbar(
           # downloadButton("download_report", "Download report"),
         ),
 
-        card(
-          full_screen = TRUE,
-          card_header("Block progress report"),
-          layout_columns(
-            gt_output("summary_effort"),
-            gt_output("summary_breeding_codes")
-          ),
-          maplibreOutput("summary_checklist_map")
+        layout_columns(
+          col_widths = c(6, 6, 12),
+          gt_output("summary_effort"),
+          gt_output("summary_breeding_codes"),
+          card(
+            "Checklist map",
+            maplibreOutput("summary_checklist_map"),
+            full_screen = TRUE
+          )
         )
       )
     )
