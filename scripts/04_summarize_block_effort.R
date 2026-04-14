@@ -516,7 +516,8 @@ summarize_season <- function(
 
   block_birders <- checklist_df |>
     distinct(pba3_block, observer_id) |>
-    summarize(birders = n_distinct(observer_id), .by = pba3_block) #this isn't right. need to separate_rows(observer_id, sep = "/") to make it long, then take n_distinct
+    separate_rows(observer_id, sep = ",") |>
+    summarize(birders = n_distinct(observer_id), .by = pba3_block)
 
   block_effort <- checklist_df |>
     distinct(pba3_block, checklist_id, duration_minutes, effort_distance_km) |> #need to check if different observer IDs can have different effort in the same checklist
