@@ -89,12 +89,6 @@ ui <- page_navbar(
     ),
 
     nav_panel(
-      "Atlas Comparison Table",
-      textInput(inputId = "block_choice", label = "Enter Block ID"),
-      reactableOutput("block_atlas_comparison_table")
-    ),
-
-    nav_panel(
       "Block progress report",
       layout_sidebar(
         # sidebar + main content
@@ -131,6 +125,11 @@ ui <- page_navbar(
               gt_output("summary_effort"),
               gt_output("summary_breeding_codes")
             )
+          ),
+
+          accordion_panel(
+            "Atlas Comparison",
+            reactableOutput("block_atlas_comparison_table")
           ),
 
           accordion_panel(
