@@ -2,7 +2,7 @@
 '$schema' = 'https://cdn.posit.co/publisher/schemas/posit-publishing-record-schema-v3.json'
 server_type = 'connect_cloud'
 server_url = 'https://connect.posit.cloud'
-client_version = '1.37.15'
+client_version = '1.37.16'
 created_at = '2026-04-07T16:47:34-04:00'
 dismissed_at = ''
 type = 'r-shiny'
@@ -11,8 +11,8 @@ id = '019c15fc-5025-6d7c-3432-6474a12c845c'
 dashboard_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c'
 direct_url = 'https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history'
-deployed_at = '2026-04-13T15:13:28-04:00'
-bundle_id = '019d8843-3d77-5ef7-cf80-58498b26ed97'
+deployed_at = '2026-04-14T12:22:45-04:00'
+bundle_id = '019d8ccd-177e-7425-a842-7201c2f2ed52'
 files = [
   '.posit/publish/PBA3 Tools-HJG8.toml',
   '.posit/publish/deployments/deployment-KBVL.toml',
