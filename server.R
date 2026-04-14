@@ -422,7 +422,7 @@ server <- function(input, output, session) {
           ),
           pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
         ),
-        defaultPageSize = 15
+        pagination = FALSE
       )
   })
 

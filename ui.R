@@ -95,7 +95,7 @@ ui <- page_navbar(
         sidebar = sidebar(
           open = TRUE,
           width = 300,
-          title = "Generate a report for a block",
+          title = "Select a block and season",
 
           selectizeInput(
             inputId = "report_block_id",
@@ -129,7 +129,11 @@ ui <- page_navbar(
 
           accordion_panel(
             "Atlas Comparison",
-            reactableOutput("block_atlas_comparison_table")
+            card(
+              reactableOutput("block_atlas_comparison_table"),
+              max_height = 300,
+              full_screen = TRUE
+            )
           ),
 
           accordion_panel(
