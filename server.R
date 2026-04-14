@@ -7,16 +7,20 @@ library(sf)
 library(arrow)
 library(geoarrow)
 library(tictoc)
-library(santoku)
 library(mapgl)
+library(quarto)
+library(gt)
+library(basemaps)
 
 options(shiny.fullstacktrace = FALSE)
 
+set_defaults(map_service = "esri", map_type = "natgeo_world_map")
+
 ####ebird release
-ebird_release <- read_file("input/ebird_release.txt")
+ebird_release <- read_file("data/ebird_release.txt")
 
 ####breeding bird calendar
-breeding_calendar_raw <- read_csv("input/breeding_calendar.csv")
+breeding_calendar_raw <- read_csv("data/breeding_calendar.csv")
 
 breeding_calendar_long <- breeding_calendar_raw |>
   mutate(across(everything(), \(x) replace_na(x, ""))) |>
@@ -84,7 +88,7 @@ format_date <- function(x) {
   str_c(current_year, "-", x) |> ydm()
 }
 
-safe_dates <- read_csv("input/bird_safe_dates.csv") |>
+safe_dates <- read_csv("data/bird_safe_dates.csv") |>
   select(
     common_name,
     safe_date_probable_start,
@@ -105,9 +109,8 @@ safe_dates <- read_csv("input/bird_safe_dates.csv") |>
   arrange(date_probable_start)
 
 ####block effort
-block_summary <- read_parquet(
-  "input/block_summary_seasons.parquet",
-  as_data_frame = FALSE
+block_summary <- open_dataset(
+  "data/block_summary_seasons.parquet"
 ) |>
   mutate(
     duration_hours_total = round(duration_hours_total, 2),
@@ -135,15 +138,32 @@ block_summary <- read_parquet(
   ) |>
   st_as_sf()
 
+#pba3_blocks <- block_summary |> distinct(pba3_block) |> pull()
+
+pba3_region_block_hierarchy <- block_summary |>
+  distinct(block_region, pba3_block, block_name) |>
+  filter(block_region != "Unknown region") |>
+  arrange(block_region, pba3_block)
+
+pba3_region_block_hierarchy <- pba3_region_block_hierarchy |>
+  group_by(block_region) |>
+  group_map(~ set_names(.x$pba3_block, .x$block_name)) |>
+  set_names(unique(
+    arrange(pba3_region_block_hierarchy, block_region)$block_region
+  ))
+
+ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
+
+seasons <- open_dataset("data/seasons.parquet") |>
+  collect()
+
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
-  "input/missing_pba2_breeding_category_obs.parquet"
+  "data/missing_pba2_breeding_category_obs.parquet"
 )
 
-#glimpse(missing_pba2_breeding_category_obs)
-
 # Define server logic required to draw a histogram ----
-server <- function(input, output) {
+server <- function(input, output, session) {
   current_month <- month(Sys.Date(), label = TRUE, abbr = TRUE) |>
     as.character()
 
@@ -278,7 +298,8 @@ server <- function(input, output) {
   #block effort map
   output$block_effort_map <- renderMaplibre({
     block_summary <- block_summary |>
-      filter(season == input$season_variable)
+      filter(season == input$season_variable) |>
+      collect()
 
     maplibre_view(
       block_summary,
@@ -292,6 +313,7 @@ server <- function(input, output) {
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
       arrange(block_region, block_name) |>
+      collect() |>
       reactable(
         resizable = TRUE,
         columns = list(
@@ -420,5 +442,105 @@ server <- function(input, output) {
 
   output$ebird_release <- renderUI({
     str_c("Data includes checklists from Jan-2024 to", ebird_release, sep = " ")
+  })
+
+  #logic for block report export
+  #not in scope right now due to memory contraint in free tier of Posit Connect Cloud
+  # report_filename <- reactive({
+  #   paste0(
+  #     "pba3_atlas_block_report_",
+  #     input$report_block_id,
+  #     "_",
+  #     input$report_season,
+  #     ".",
+  #     input$report_format
+  #   ) |>
+  #     str_replace_all(" ", "_")
+  # })
+
+  # output$download_report <- downloadHandler(
+  #   filename = \() {
+  #     report_filename()
+  #   },
+  #   content = \(file) {
+  #     project_dir <- normalizePath(".")
+  #     report_path <- file.path(project_dir, "reports", "block_report.qmd")
+  #     report_dir <- dirname(report_path)
+  #     out_name <- report_filename()
+  #     out_path <- file.path(report_dir, out_name)
+
+  #     old <- setwd(project_dir)
+  #     on.exit(setwd(old), add = TRUE)
+
+  #     quarto::quarto_render(
+  #       input = report_path,
+  #       output_format = input$report_format,
+  #       output_file = out_name,
+  #       execute_params = list(block_id = input$report_block_id, season = input$report_season),
+  #       execute_dir = project_dir,
+  #       quiet = FALSE
+  #     )
+
+  #     file.copy(out_path, file, overwrite = TRUE)
+
+  #     if (dir.exists(file.path(report_dir, "block_report_files"))) {
+  #       unlink(file.path(report_dir, "block_report_files"), recursive = TRUE)
+  #     }
+
+  #     if (file.exists(out_path)) {
+  #       unlink(out_path)
+  #     }
+  #   }
+  # )
+
+  observeEvent(1, {
+    new_choices <- pba3_region_block_hierarchy
+
+    # Can also set the label and select items
+    updateSelectizeInput(
+      session,
+      "report_block_id",
+      choices = new_choices,
+      selected = pba3_region_block_hierarchy |>
+        pluck(1, 1)
+    )
+  })
+
+  bird_df_summary <- reactive({
+    block_summary |>
+      filter(
+        pba3_block == input$report_block_id,
+        season == input$report_season
+      ) |>
+      collect() |>
+      st_drop_geometry()
+  })
+
+  ebd_df_summary <- reactive({
+    seasons_filtered <- seasons |>
+      filter(season == input$report_season)
+
+    ebd_df |>
+      filter(pba3_block == input$report_block_id) |>
+      collect() |>
+      semi_join(seasons_filtered, by = c("observation_month" = "month"))
+  })
+
+  output$summary_effort <- render_gt({
+    summarize_effort(bird_df_summary())
+  })
+
+  output$summary_breeding_codes <- render_gt({
+    summarize_breeding_codes(bird_df_summary())
+  })
+
+  output$summary_checklist_map <- renderMaplibre({
+    req(input$report_block_id, input$report_season)
+
+    ebd_df_summary() |>
+      distinct(checklist_id, longitude, latitude) |>
+      count(longitude, latitude, name = "checklist_count") |>
+      st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+      map_checklist_count()
   })
 }

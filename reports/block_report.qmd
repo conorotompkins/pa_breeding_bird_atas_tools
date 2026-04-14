@@ -1,0 +1,70 @@
+---
+title: "Block report"
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+  pdf:
+    documentclass: report
+format-links: false
+project:
+  execute-dir: project
+params:
+  block_id: "40080D1SE"
+  season: "All seasons"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+# Load packages (tidyverse for data work)
+library(tidyverse)
+library(arrow)
+library(gt)
+library(sf)
+library(basemaps)
+
+source("R/plot_checklist_coords.R")
+source("R/summarize_breeding_codes.R")
+source("R/summarize_effort.R")
+
+# Read in full project data, then filter down to a single block
+
+block_summary <- open_dataset("data/block_summary_seasons.parquet") |>
+  filter(pba3_block == params$block_id, season == params$season) |>
+  collect() |>
+  st_drop_geometry()
+
+ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet") |>
+  filter(pba3_block == params$block_id) |>
+  collect()
+
+report_block_name <- ebd_df$block_name
+```
+
+## `{r} params$block_id` for season "`{r} params$season`"
+
+### Species code summary
+
+```{r}
+summarize_breeding_codes(block_summary)
+```
+
+### Effort summary
+
+```{r}
+summarize_effort(block_summary)
+```
+
+```{r}
+#glimpse(ebd_df)
+```
+
+```{r}
+set_defaults(map_service = "esri", map_type = "natgeo_world_map")
+
+plot_checklist_coords(ebd_df)
+```

@@ -5,7 +5,7 @@ library(sf)
 library(tools)
 library(arrow)
 
-auk_file <- "input/ebd_US-PA_202401_202602_smp_relFeb-2026/ebd_US-PA_202401_202602_smp_relFeb-2026.txt"
+auk_file <- "data/ebd_US-PA_202401_202602_smp_relFeb-2026/ebd_US-PA_202401_202602_smp_relFeb-2026.txt"
 
 file.exists(auk_file) == TRUE
 
@@ -16,9 +16,9 @@ ebird_release <- str_extract(auk_file, release_pattern) |>
 
 ebird_release
 
-write_file(ebird_release, "input/ebird_release.txt")
+write_file(ebird_release, "data/ebird_release.txt")
 
-output_file <- "input/pa_breeding_bird_atlas_data_raw.txt"
+output_file <- "data/pa_breeding_bird_atlas_data_raw.txt"
 
 tic()
 ebd <- auk_file |>
@@ -47,7 +47,7 @@ ebd <- ebd |>
   ) |>
   rename(pba3_block = atlas_block)
 
-write_parquet(ebd, "input/pa_breeding_bird_atlas_processed.parquet")
+write_parquet(ebd, "data/pa_breeding_bird_atlas_processed.parquet")
 
 ebd |> distinct(project_names)
 

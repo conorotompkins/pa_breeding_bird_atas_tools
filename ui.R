@@ -4,6 +4,15 @@ library(bsicons)
 library(reactable)
 library(shinyWidgets)
 library(mapgl)
+library(gt)
+
+completion_criteria_value_boxes <- list(
+  value_box(title = "Completion criterion 1", value = 1),
+  value_box(title = "Completion criterion 2", value = 2),
+  value_box(title = "Completion criterion 3", value = 3),
+  value_box(title = "Completion criterion 4", value = 4),
+  value_box(title = "Completion criterion 5", value = 5)
+)
 
 ui <- page_navbar(
   fillable_mobile = TRUE,
@@ -83,6 +92,56 @@ ui <- page_navbar(
       "Atlas Comparison Table",
       textInput(inputId = "block_choice", label = "Enter Block ID"),
       reactableOutput("block_atlas_comparison_table")
+    ),
+
+    nav_panel(
+      "Block progress report",
+      layout_sidebar(
+        # sidebar + main content
+        sidebar = sidebar(
+          open = TRUE,
+          width = 300,
+          title = "Generate a report for a block",
+
+          selectizeInput(
+            inputId = "report_block_id",
+            label = "Block ID",
+            choices = c("40080D1SE", "39077G6SW")
+          ),
+
+          selectInput(
+            inputId = "report_season",
+            label = "Season",
+            choices = c("All seasons", "Breeding", "Winter")
+          ),
+
+          # selectInput(
+          #   "report_format",
+          #   "Format",
+          #   choices = c("html", "pdf"),
+          #   selected = "html"
+          # ),
+          # downloadButton("download_report", "Download report"),
+        ),
+        accordion(
+          accordion_panel(
+            "Effort",
+            layout_columns(
+              col_widths = c(6, 6, 12),
+              gt_output("summary_effort"),
+              gt_output("summary_breeding_codes")
+            )
+          ),
+
+          accordion_panel(
+            "Checklist map",
+            card(
+              maplibreOutput("summary_checklist_map"),
+              full_screen = TRUE
+            )
+          )
+        )
+      )
     )
   ),
 

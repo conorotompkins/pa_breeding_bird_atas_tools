@@ -10,16 +10,16 @@ options(scipen = 999, digits = 4)
 
 theme_set(theme_bw())
 
-source("functions/mode.R")
+source("R/mode.R")
 
 #block name lookup file
-block_name_lookup <- read_csv("input/block_name_lookup.csv") |>
+block_name_lookup <- read_csv("data/block_name_lookup.csv") |>
   distinct(block_id, region, block_name) |>
   rename(pba3_block = block_id, block_region = region)
 
 #location sunrise/sunset
 location_sunrise_sunset <- read_parquet(
-  "input/location_sunrise_sunset.parquet"
+  "data/location_sunrise_sunset.parquet"
 )
 
 glimpse(location_sunrise_sunset)
@@ -40,7 +40,7 @@ breeding_lookup
 
 #checklists
 tic()
-ebd_df <- read_parquet("input/pa_breeding_bird_atlas_processed.parquet")
+ebd_df <- read_parquet("data/pa_breeding_bird_atlas_processed.parquet")
 toc()
 
 glimpse(ebd_df)
@@ -143,10 +143,10 @@ ob_dt_fixed
 #   maplibre_view()
 
 #block map
-st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
+st_read("data/PABBA_2nd/PABBA_2nd.shp") |>
   glimpse()
 
-pba2_blocks <- st_read("input/PABBA_2nd/PABBA_2nd.shp") |>
+pba2_blocks <- st_read("data/PABBA_2nd/PABBA_2nd.shp") |>
   select(BLOCK_ID) |>
   rename(pba2_block = BLOCK_ID)
 
@@ -360,11 +360,13 @@ seasons <- tibble(
 
 seasons
 
+write_parquet(seasons, "data/seasons.parquet")
+
 glimpse(ebd_df)
 
 #compare block breeding rank between PBA2 and PBA3
 #expected species based on PBA2
-pbba2_df <- read_csv("input/PBBA2_block_species_codes.csv") |>
+pbba2_df <- read_csv("data/PBBA2_block_species_codes.csv") |>
   rename(
     block = 1,
     pba3_block = 2,
@@ -450,12 +452,12 @@ atlas_max_breeding_rank_comparison |>
 
 atlas_max_breeding_rank_comparison |>
   arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
-  write_parquet("input/atlas_max_breeding_category_comparison.parquet")
+  write_parquet("data/atlas_max_breeding_category_comparison.parquet")
 
 atlas_max_breeding_rank_comparison |>
   filter(pba2_breeding_rank_max > pba3_breeding_rank_max) |>
   arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
-  write_parquet("input/missing_pba2_breeding_category_obs.parquet")
+  write_parquet("data/missing_pba2_breeding_category_obs.parquet")
 
 confirmed_pba2_unconfirmed_pba3 <- atlas_max_breeding_rank_comparison |>
   summarize(
@@ -473,7 +475,7 @@ confirmed_pba2_unconfirmed_pba3 |>
   scale_fill_viridis_c()
 
 confirmed_pba2_unconfirmed_pba3 |>
-  write_parquet("input/confirmed_pba2_unconfirmed_pba3.parquet")
+  write_parquet("data/confirmed_pba2_unconfirmed_pba3.parquet")
 
 #summary metrics by season
 summarize_season <- function(
@@ -686,10 +688,10 @@ block_summary_seasons |>
   facet_wrap(vars(season), ncol = 1) +
   theme_bw()
 
-write_parquet(block_summary_seasons, "input/block_summary_seasons.parquet")
+write_parquet(block_summary_seasons, "data/block_summary_seasons.parquet")
 
 block_summary_seasons_test <- read_parquet(
-  "input/block_summary_seasons.parquet",
+  "data/block_summary_seasons.parquet",
   as_data_frame = FALSE
 ) |>
   st_as_sf()
