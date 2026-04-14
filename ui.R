@@ -89,19 +89,13 @@ ui <- page_navbar(
     ),
 
     nav_panel(
-      "Atlas Comparison Table",
-      textInput(inputId = "block_choice", label = "Enter Block ID"),
-      reactableOutput("block_atlas_comparison_table")
-    ),
-
-    nav_panel(
       "Block progress report",
       layout_sidebar(
         # sidebar + main content
         sidebar = sidebar(
           open = TRUE,
           width = 300,
-          title = "Generate a report for a block",
+          title = "Select a block and season",
 
           selectizeInput(
             inputId = "report_block_id",
@@ -130,6 +124,15 @@ ui <- page_navbar(
               col_widths = c(6, 6, 12),
               gt_output("summary_effort"),
               gt_output("summary_breeding_codes")
+            )
+          ),
+
+          accordion_panel(
+            "Atlas Comparison",
+            card(
+              reactableOutput("block_atlas_comparison_table"),
+              max_height = 300,
+              full_screen = TRUE
             )
           ),
 

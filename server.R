@@ -384,37 +384,32 @@ server <- function(input, output, session) {
   })
 
   atlas_comparison <- reactive({
-    req(input$block_choice)
+    req(input$report_block_id)
 
     missing_pba2_breeding_category_obs |>
-      filter(str_detect(pba3_block, input$block_choice)) |>
-      arrange(pba3_block)
+      filter(pba3_block == input$report_block_id) |>
+      mutate(atlas_diff = pba2_breeding_rank_max - pba3_breeding_rank_max) |>
+      arrange(desc(atlas_diff))
   })
 
   output$block_atlas_comparison_table <- renderReactable({
     req(nrow(atlas_comparison()) > 0)
 
     atlas_comparison() |>
+      select(-c(atlas_diff, block_region)) |>
       reactable(
         resizable = TRUE,
         columns = list(
-          pba3_block = colDef(
-            name = "Block ID",
-            filterable = TRUE,
-            maxWidth = 150,
-            cell = function(value) {
-              url <- paste0("https://ebird.org/atlaspa/block/", value)
-              tags$a(href = url, target = "_blank", value)
-            }
-          ),
+          pba3_block = colDef(show = FALSE),
           block_name = colDef(
             name = "Block name",
-            filterable = TRUE,
-            maxWidth = 220
-          ),
-          block_region = colDef(
-            name = "Block region",
-            filterable = TRUE,
+            cell = function(value, index) {
+              url <- paste0(
+                "https://ebird.org/atlaspa/block/",
+                atlas_comparison()$pba3_block[index]
+              )
+              tags$a(href = url, target = "_blank", value)
+            },
             maxWidth = 220
           ),
           common_name = colDef(name = "Common Name"),
@@ -427,7 +422,7 @@ server <- function(input, output, session) {
           ),
           pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
         ),
-        defaultPageSize = 15,
+        pagination = FALSE
       )
   })
 
