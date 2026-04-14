@@ -121,15 +121,22 @@ ui <- page_navbar(
           # ),
           # downloadButton("download_report", "Download report"),
         ),
+        accordion(
+          accordion_panel(
+            "Effort",
+            layout_columns(
+              col_widths = c(6, 6, 12),
+              gt_output("summary_effort"),
+              gt_output("summary_breeding_codes")
+            )
+          ),
 
-        layout_columns(
-          col_widths = c(6, 6, 12),
-          gt_output("summary_effort"),
-          gt_output("summary_breeding_codes"),
-          card(
+          accordion_panel(
             "Checklist map",
-            maplibreOutput("summary_checklist_map"),
-            full_screen = TRUE
+            card(
+              maplibreOutput("summary_checklist_map"),
+              full_screen = TRUE
+            )
           )
         )
       )
