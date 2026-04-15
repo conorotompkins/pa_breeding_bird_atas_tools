@@ -536,7 +536,7 @@ summarize_season <- function(
     select(-breeding_rank) |>
     pivot_wider(names_from = breeding_category_desc, values_from = n)
 
-  block_diurnal_nocturnal_effort_hours <- checklist_df |>
+  block_dn_raw <- checklist_df |>
     distinct(
       pba3_block,
       checklist_id,
@@ -575,7 +575,9 @@ summarize_season <- function(
         is.na(flag_is_diurnal_checklist) ~ "unknown"
       )
     ) |>
-    select(-flag_is_diurnal_checklist) |>
+    select(-flag_is_diurnal_checklist)
+
+  block_dn_summary <- block_dn_raw |>
     summarize(
       duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
       .by = c(pba3_block, checklist_type)
@@ -592,13 +594,38 @@ summarize_season <- function(
       duration_hours_unknown
     )
 
+  block_dn_date <- block_dn_raw |>
+    mutate(
+      observation_date = as_date(observation_datetime)
+    ) |>
+    summarize(
+      duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
+      .by = c(pba3_block, checklist_type, observation_date)
+    ) |>
+    pivot_wider(
+      names_from = checklist_type,
+      values_from = duration_hours,
+      names_prefix = "duration_hours_"
+    ) |>
+    select(
+      pba3_block,
+      observation_date,
+      duration_hours_diurnal,
+      duration_hours_nocturnal,
+      duration_hours_unknown
+    ) |>
+    group_nest(pba3_block, .key = "effort_breakdown")
+
+  block_dn_summary <- block_dn_summary |>
+    left_join(block_dn_date)
+
   df_list <- list(
     block_checklist_count,
     block_species_observed,
     block_birders,
     block_effort,
     block_species_coded,
-    block_diurnal_nocturnal_effort_hours
+    block_dn_summary
   )
 
   block_summary <- reduce(df_list, left_join, by = "pba3_block")
@@ -615,6 +642,15 @@ x <- summarize_season(
 x |>
   filter(pba3_block == "40080D1SE") |>
   glimpse()
+
+x |>
+  filter(pba3_block == "40080D1SE") |>
+  select(effort_breakdown) |>
+  unnest(effort_breakdown) |>
+  mutate(
+    observation_month = month(observation_date, label = TRUE, abbr = TRUE)
+  ) |>
+  summarize(across(starts_with("duration"), sum), .by = observation_month)
 
 season_summaries <- map(
   set_names(c("All seasons", "Breeding", "Winter")),
@@ -679,6 +715,7 @@ glimpse(block_summary_seasons)
 
 block_summary_seasons |>
   filter(season == "All seasons") |>
+  select(-effort_breakdown) |>
   maplibre_view(column = "duration_hours_diurnal")
 
 block_summary_seasons |>
