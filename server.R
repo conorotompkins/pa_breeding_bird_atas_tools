@@ -10,11 +10,12 @@ library(tictoc)
 library(mapgl)
 library(quarto)
 library(gt)
-library(basemaps)
+library(tsibble)
+#library(basemaps)
 
 options(shiny.fullstacktrace = FALSE)
 
-set_defaults(map_service = "esri", map_type = "natgeo_world_map")
+#set_defaults(map_service = "esri", map_type = "natgeo_world_map")
 
 ####ebird release
 ebird_release <- read_file("data/ebird_release.txt")
@@ -134,11 +135,19 @@ block_summary <- open_dataset(
     duration_hours_unknown,
     effort_distance_km,
     pct_missing_pba2_confirmations,
+    effort_breakdown,
     geometry
-  ) |>
-  st_as_sf()
+  )
 
-#pba3_blocks <- block_summary |> distinct(pba3_block) |> pull()
+effort_breakdown <- block_summary |>
+  collect() |>
+  st_drop_geometry() |>
+  select(pba3_block, season, effort_breakdown) |>
+  unnest(effort_breakdown)
+
+block_summary <- block_summary |>
+  select(-effort_breakdown) |>
+  st_as_sf()
 
 pba3_region_block_hierarchy <- block_summary |>
   distinct(block_region, pba3_block, block_name) |>
@@ -537,5 +546,43 @@ server <- function(input, output, session) {
       count(longitude, latitude, name = "checklist_count") |>
       st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
       map_checklist_count()
+  })
+
+  output$effort_breakdown <- renderPlot({
+    req(input$report_block_id, input$report_season)
+
+    x <- effort_breakdown |>
+      filter(pba3_block == "40080D1SE") |>
+      mutate(
+        obs_ym = yearmonth(observation_date),
+        obs_year = year(observation_date),
+        obs_month = month(observation_date, label = TRUE, abbr = TRUE)
+      ) |>
+      rowwise() |>
+      mutate(
+        duration_hours_total = sum(
+          duration_hours_diurnal,
+          duration_hours_nocturnal,
+          duration_hours_unknown,
+          na.rm = TRUE
+        ),
+      ) |>
+      ungroup() |>
+      select(pba3_block, season, starts_with("obs"), starts_with("duration"))
+
+    facet_label <- "Year"
+
+    x |>
+      summarize(
+        across(starts_with("duration"), sum),
+        .by = c(obs_year, obs_month)
+      ) |>
+      ggplot(aes(x = obs_month, y = duration_hours_total, group = 1)) +
+      geom_line() +
+      geom_point() +
+      facet_wrap(vars(str_c(facet_label, ": ", obs_year, sep = "")), ncol = 1) +
+      scale_y_continuous(expand = expansion(mult = .2)) +
+      labs(title = "Effort hours across time", x = "Date", y = "Effort") +
+      theme_bw(base_size = 18)
   })
 }

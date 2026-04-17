@@ -142,6 +142,11 @@ ui <- page_navbar(
               maplibreOutput("summary_checklist_map"),
               full_screen = TRUE
             )
+          ),
+
+          accordion_panel(
+            "Effort breakdown",
+            card(plotOutput("effort_breakdown"), full_screen = TRUE)
           )
         )
       )
