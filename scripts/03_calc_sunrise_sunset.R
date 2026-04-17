@@ -77,7 +77,7 @@ slice_head(checklist_time_loc, n = 2) |>
   calc_sunrise_sunset()
 
 tic()
-## 1596.743 sec elapsed
+## 1925.312 sec elapsed
 Sys.time()
 location_sunrise_sunset <- checklist_time_loc |>
   mutate(

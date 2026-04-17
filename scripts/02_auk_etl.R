@@ -5,7 +5,7 @@ library(sf)
 library(tools)
 library(arrow)
 
-auk_file <- "data/ebd_US-PA_202401_202602_smp_relFeb-2026/ebd_US-PA_202401_202602_smp_relFeb-2026.txt"
+auk_file <- "data/ebd_US-PA_202401_202603_smp_relMar-2026/ebd_US-PA_202401_202603_smp_relMar-2026.txt"
 
 file.exists(auk_file) == TRUE
 
@@ -23,13 +23,13 @@ output_file <- "data/pa_breeding_bird_atlas_data_raw.txt"
 tic()
 ebd <- auk_file |>
   auk_ebd() |>
-  auk_date(date = c("2024-01-01", "2026-01-31")) |>
+  auk_date(date = c("2024-01-01", "2026-03-31")) |> #need to update every refresh
   auk_project("Pennsylvania Bird Atlas") |>
   auk_filter(file = output_file, overwrite = TRUE) |>
   # 4. read text file into r data frame
   read_ebd()
 toc()
-# 901.116 sec elapsed
+# 1041.117 sec elapsed
 
 glimpse(ebd)
 

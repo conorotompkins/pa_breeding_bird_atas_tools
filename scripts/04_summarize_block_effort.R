@@ -5,6 +5,7 @@ library(arrow)
 library(geoarrow)
 library(tictoc)
 library(mapgl)
+library(glue)
 
 options(scipen = 999, digits = 4)
 
@@ -45,9 +46,11 @@ toc()
 
 glimpse(ebd_df)
 
+print("Block lookup IDs from block_name_lookup that are NOT in ebd_df")
 block_name_lookup |>
   anti_join(ebd_df |> distinct(pba3_block))
 
+print("Block IDs from ebd_df that are NOT in block_name_lookup")
 ebd_df |>
   distinct(pba3_block) |>
   anti_join(block_name_lookup)
@@ -71,6 +74,7 @@ ebd_df |>
   distinct(breeding_category, breeding_code, breeding_rank) |>
   arrange(breeding_rank)
 
+print("Checking for checklists with >1 observation_datetime")
 ebd_df |>
   distinct(checklist_id, observation_datetime) |>
   count(checklist_id) |>
@@ -99,9 +103,16 @@ dupe_start_times <- ebd_df |>
 
 dupe_start_times
 
-dupe_start_times |>
-  nrow() ==
-  0
+dupe_start_times_check <- dupe_start_times |>
+  nrow() >
+  1
+
+glue(
+  "Non-distinct checklist start times present: ",
+  dupe_start_times_check
+)
+
+glue(nrow(dupe_start_times), " checklists have >1 start times")
 
 ebd_df |>
   distinct(
@@ -150,12 +161,15 @@ pba2_blocks <- st_read("data/PABBA_2nd/PABBA_2nd.shp") |>
   select(BLOCK_ID) |>
   rename(pba2_block = BLOCK_ID)
 
-pba2_blocks |>
+print("Checkiing for duplicate pba2_block")
+pba2_check <- pba2_blocks |>
   st_drop_geometry() |>
   count(pba2_block) |>
   filter(n > 1) |>
   nrow() ==
   0
+
+glue("pba2_block is unique: ", pba2_check)
 
 # maplibre(bounds = pba2_blocks) |>
 #   add_fill_layer(
@@ -194,8 +208,6 @@ pba3_centroids <- checklist_pba3_block |>
   st_convex_hull() |>
   st_point_on_surface()
 
-pba3_centroids
-
 pba3_centroids |>
   ggplot() +
   geom_sf(size = .5)
@@ -227,7 +239,8 @@ block_checklist_geo |>
   distinct(pba3_block, pba2_block) |>
   count(pba3_block, sort = TRUE)
 
-block_checklist_geo |>
+print("Checking that pba3_block and pba2_block are 1-1 (excluding NAs)")
+block_relationship_na_check <- block_checklist_geo |>
   st_drop_geometry() |>
   as_tibble() |>
   distinct(pba3_block, pba2_block) |>
@@ -237,7 +250,10 @@ block_checklist_geo |>
   nrow() ==
   0
 
-block_checklist_geo |>
+glue("pba3_block and pba2_block are 1-1: ", block_relationship_na_check)
+
+print("Checking that pba3_block and pba2_block are 1-1 (excluding NAs)")
+block_relationship_check <- block_checklist_geo |>
   st_drop_geometry() |>
   as_tibble() |>
   distinct(pba3_block, pba2_block) |>
@@ -245,6 +261,8 @@ block_checklist_geo |>
   filter(n > 1) |>
   nrow() ==
   0
+
+glue("pba3_block and pba2_block are 1-1: ", block_relationship_check)
 
 block_checklist_geo |>
   filter(pba2_block == 4932) |>
@@ -408,13 +426,27 @@ pba2_confirmed_blocks <- distinct(pba2_breeding_rank_max, pba3_block)
 
 pba3_confirmed_blocks <- distinct(pba3_breeding_rank_max, pba3_block)
 
-#all blocks in pba3_confirmed should be in pba2_confirmed
-pba3_confirmed_blocks |>
-  anti_join(pba2_confirmed_blocks)
+print("Checking that all blocks in pba3_confirmed are in pba2_confirmed")
+confirmed_blocks_check1 <- pba3_confirmed_blocks |>
+  anti_join(pba2_confirmed_blocks) |>
+  nrow() ==
+  0
 
-#all blocks in pba2_confirmed should be in pba3_confirmed
-pba2_confirmed_blocks |>
-  anti_join(pba3_confirmed_blocks)
+glue(
+  "All blocks in pba3_confirmed are in pba2_confirmed: ",
+  confirmed_blocks_check1
+)
+
+print("Checking that all blocks in pba2_confirmed should be in pba3_confirmed")
+confirmed_blocks_check2 <- pba2_confirmed_blocks |>
+  anti_join(pba3_confirmed_blocks) |>
+  nrow() ==
+  0
+
+glue(
+  "All blocks in pba2_confirmed are in pba3_confirmed: ",
+  confirmed_blocks_check2
+)
 
 #only compare blocks that exist in PBA2 and PBA3
 atlas_max_breeding_rank_comparison <- bind_rows(
@@ -650,7 +682,10 @@ x |>
   mutate(
     observation_month = month(observation_date, label = TRUE, abbr = TRUE)
   ) |>
-  summarize(across(starts_with("duration"), sum), .by = observation_month)
+  summarize(
+    across(starts_with("duration"), \(x) sum(x, na.rm = TRUE)),
+    .by = observation_month
+  )
 
 season_summaries <- map(
   set_names(c("All seasons", "Breeding", "Winter")),
@@ -671,6 +706,7 @@ block_checklist_geo |>
   as_tibble() |>
   filter(n > 1)
 
+#need to set join argument to deal with many-to-many
 block_summary_seasons <- left_join(
   block_checklist_geo,
   block_summary_seasons,
