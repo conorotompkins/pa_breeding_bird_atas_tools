@@ -41,29 +41,33 @@ breeding_lookup
 
 #checklists
 tic()
-ebd_df <- read_parquet("data/pa_breeding_bird_atlas_processed.parquet")
+ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
 toc()
 
 glimpse(ebd_df)
 
 print("Block lookup IDs from block_name_lookup that are NOT in ebd_df")
 block_name_lookup |>
-  anti_join(ebd_df |> distinct(pba3_block))
+  anti_join(ebd_df |> distinct(pba3_block) |> collect())
 
 print("Block IDs from ebd_df that are NOT in block_name_lookup")
 ebd_df |>
   distinct(pba3_block) |>
+  collect() |>
   anti_join(block_name_lookup)
 
 ebd_df |>
-  summarize(min(observation_date), max(observation_date))
+  summarize(min(observation_date), max(observation_date)) |>
+  collect()
 
 ebd_df |>
   count(breeding_category, breeding_code) |>
-  arrange(breeding_category)
+  arrange(breeding_category) |>
+  collect()
 
 ebd_df |>
-  distinct(breeding_category)
+  distinct(breeding_category) |>
+  collect()
 
 ebd_df <- ebd_df |>
   left_join(breeding_lookup, by = join_by(breeding_category))
@@ -72,17 +76,20 @@ glimpse(ebd_df)
 
 ebd_df |>
   distinct(breeding_category, breeding_code, breeding_rank) |>
-  arrange(breeding_rank)
+  arrange(breeding_rank) |>
+  collect()
 
 print("Checking for checklists with >1 observation_datetime")
 ebd_df |>
   distinct(checklist_id, observation_datetime) |>
   count(checklist_id) |>
-  filter(n > 1)
+  filter(n > 1) |>
+  collect()
 
 ebd_df |>
   distinct(checklist_id, observation_datetime) |>
-  filter(checklist_id == "G11700387")
+  filter(checklist_id == "G11700387") |>
+  collect()
 
 # ebd_df |>
 #   filter(checklist_id == "G11700387") |>
@@ -93,13 +100,15 @@ ebd_df |>
   select(checklist_id, observation_datetime, observer_id) |>
   distinct() |>
   count(checklist_id) |>
-  count(n)
+  count(n) |>
+  collect()
 
 dupe_start_times <- ebd_df |>
   select(checklist_id, observation_datetime) |>
   distinct() |>
   count(checklist_id) |>
-  filter(n > 1)
+  filter(n > 1) |>
+  collect()
 
 dupe_start_times
 
@@ -125,6 +134,7 @@ ebd_df |>
   ) |>
   semi_join(dupe_start_times) |>
   mutate(across(everything(), as.character)) |>
+  collect() |>
   write_csv("~/Downloads/dupe_start_times.csv")
 
 #find modal start time per checklist. I will use that for all observers for each checklist.
@@ -136,6 +146,7 @@ ob_dt_fixed <- ebd_df |>
     observation_datetime
   ) |>
   semi_join(dupe_start_times) |>
+  collect() |>
   separate_longer_delim(observer_id, delim = ",") |>
   mutate(
     observation_datetime_fixed = mode(observation_datetime),
@@ -144,7 +155,6 @@ ob_dt_fixed <- ebd_df |>
   distinct(checklist_id, observation_datetime_fixed)
 
 ob_dt_fixed
-
 
 # ebd_df |>
 #   filter(is.na(pba3_block)) |>
@@ -161,7 +171,7 @@ pba2_blocks <- st_read("data/PABBA_2nd/PABBA_2nd.shp") |>
   select(BLOCK_ID) |>
   rename(pba2_block = BLOCK_ID)
 
-print("Checkiing for duplicate pba2_block")
+print("Checking for duplicate pba2_block")
 pba2_check <- pba2_blocks |>
   st_drop_geometry() |>
   count(pba2_block) |>
@@ -187,6 +197,7 @@ glue("pba2_block is unique: ", pba2_check)
 #distinct of checklist coordinates and pba3_block
 checklist_pba3_block <- ebd_df |>
   distinct(pba3_block, checklist_id, longitude, latitude) |>
+  collect() |>
   st_as_sf(coords = c("longitude", "latitude"))
 
 st_crs(checklist_pba3_block) <- st_crs(pba2_blocks)
@@ -413,6 +424,7 @@ pba2_breeding_rank_max <- pbba2_df |>
   )
 
 pba3_breeding_rank_max <- ebd_df |>
+  collect() |>
   group_by(pba3_block, common_name) |>
   filter(breeding_rank == max(breeding_rank)) |>
   ungroup() |>
@@ -526,40 +538,44 @@ summarize_season <- function(
       by = join_by(observation_month == month)
     )
 
-  # block_summary <- checklist_df |>
-  #   group_by(pba3_block) |>
-  #   summarize(
-  #     checklist_count = n_distinct(checklist_id),
-  #     species_observed = n_distinct(common_name),
-  #     birders = n_distinct(observer_id),
-  #     duration_hours = sum(duration_minutes, na.rm = TRUE) / 60,
-  #     effort_distance_km = sum(effort_distance_km, na.rm = TRUE)
-  #   ) |>
-  #   ungroup()
-
+  print("calculating checklist counts")
   block_checklist_count <- checklist_df |>
     distinct(pba3_block, checklist_id) |>
-    summarize(checklist_count = n_distinct(checklist_id), .by = pba3_block)
+    summarize(checklist_count = n_distinct(checklist_id), .by = pba3_block) |>
+    collect()
 
+  print("calculating species observed")
   block_species_observed <- checklist_df |>
     select(pba3_block, common_name) |>
     distinct() |>
-    summarize(species_observed = n_distinct(common_name), .by = pba3_block)
+    summarize(species_observed = n_distinct(common_name), .by = pba3_block) |>
+    collect()
 
+  print("calculating birders")
   block_birders <- checklist_df |>
     distinct(pba3_block, observer_id) |>
+    collect() |>
     separate_rows(observer_id, sep = ",") |>
     summarize(birders = n_distinct(observer_id), .by = pba3_block)
 
+  print("calculating effort summary")
   block_effort <- checklist_df |>
-    distinct(pba3_block, checklist_id, duration_minutes, effort_distance_km) |> #need to check if different observer IDs can have different effort in the same checklist
+    distinct(pba3_block, checklist_id, duration_minutes, effort_distance_km) |> #for each checklist, find max of duration minutes and effort distance
+    summarize(
+      duration_minutes = max(duration_minutes, na.rm = TRUE),
+      effort_distance_km = max(effort_distance_km, na.rm = TRUE),
+      .by = c(pba3_block, checklist_id)
+    ) |>
     summarize(
       duration_hours_total = sum(duration_minutes, na.rm = TRUE) / 60,
       effort_distance_km = sum(effort_distance_km, na.rm = TRUE),
       .by = pba3_block
-    )
+    ) |>
+    collect()
 
+  print("calculating species codes")
   block_species_coded <- checklist_df |>
+    collect() |>
     distinct(pba3_block, common_name, breeding_category_desc, breeding_rank) |>
     group_by(pba3_block, common_name) |>
     filter(breeding_rank == max(breeding_rank)) |>
@@ -567,6 +583,8 @@ summarize_season <- function(
     count(pba3_block, breeding_category_desc, breeding_rank) |>
     select(-breeding_rank) |>
     pivot_wider(names_from = breeding_category_desc, values_from = n)
+
+  print("calculating diurnal/nocturnal effort")
 
   block_dn_raw <- checklist_df |>
     distinct(
@@ -578,6 +596,7 @@ summarize_season <- function(
       latitude,
       duration_minutes
     ) |>
+    collect() |>
     left_join(ob_dt_fixed) |>
     mutate(
       observation_datetime = case_when(
@@ -586,7 +605,19 @@ summarize_season <- function(
       )
     ) |>
     select(-c(observation_datetime_fixed, observer_id)) |>
-    distinct() |>
+    #for each checklist, find max of duration minutes and effort distance
+    summarize(
+      observation_datetime = min(observation_datetime, na.rm = TRUE),
+      duration_minutes = max(duration_minutes, na.rm = TRUE),
+      .by = c(pba3_block, checklist_id, longitude, latitude)
+    ) |>
+    mutate(
+      #if all checklists for a block have NA duration_minutes, max(duration_minutes) is -Inf. Replace with 0
+      duration_minutes = case_when(
+        duration_minutes == -Inf ~ 0,
+        .default = duration_minutes
+      )
+    ) |>
     left_join(
       location_sunrise_sunset,
       by = join_by(

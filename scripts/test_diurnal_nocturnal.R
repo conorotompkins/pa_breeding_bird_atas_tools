@@ -7,7 +7,7 @@ library(tictoc)
 library(mapgl)
 library(hms)
 
-source("functions/mode.R")
+source("R/mode.R")
 
 options(scipen = 999, digits = 4)
 
@@ -26,7 +26,7 @@ breeding_lookup <- tibble(
 )
 
 location_sunrise_sunset <- read_parquet(
-  "input/location_sunrise_sunset.parquet"
+  "data/location_sunrise_sunset.parquet"
 )
 
 glimpse(location_sunrise_sunset)
@@ -37,12 +37,12 @@ location_sunrise_sunset |>
   nrow() ==
   0
 
-block_name_lookup <- read_csv("input/block_name_lookup.csv") |>
+block_name_lookup <- read_csv("data/block_name_lookup.csv") |>
   distinct(block_id, region, block_name) |>
   rename(pba3_block = block_id, block_region = region)
 
 tic()
-ebd_df <- read_parquet("input/pa_breeding_bird_atlas_processed.parquet")
+ebd_df <- read_parquet("data/pa_breeding_bird_atlas_processed.parquet")
 toc()
 
 glimpse(ebd_df)
@@ -100,7 +100,24 @@ test1 <- ebd_df |>
     )
   ) |>
   select(-c(observation_datetime_fixed, observer_id)) |>
-  distinct()
+  #distinct()
+  summarize(
+    observation_datetime = min(observation_datetime, na.rm = TRUE),
+    duration_minutes = max(duration_minutes, na.rm = TRUE),
+    .by = c(pba3_block, checklist_id, longitude, latitude)
+  ) |>
+  mutate(
+    duration_minutes = case_when(
+      duration_minutes == -Inf ~ 0,
+      .default = duration_minutes
+    )
+  )
+
+test1
+
+ebd_df |>
+  filter(pba3_block == "41077C1CE", checklist_id == "G11425557") |>
+  select(observation_datetime, duration_minutes)
 
 test1 |>
   distinct(checklist_id, observation_datetime) |>
