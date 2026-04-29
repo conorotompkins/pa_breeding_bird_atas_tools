@@ -460,14 +460,14 @@ glue(
   confirmed_blocks_check2
 )
 
-#only compare blocks that exist in PBA2 and PBA3
+#compare blocks that exist in PBA2 or PBA3
 atlas_max_breeding_rank_comparison <- bind_rows(
   pba2_breeding_rank_max |> distinct(pba3_block, common_name),
   pba3_breeding_rank_max |> distinct(pba3_block, common_name)
 ) |>
   distinct() |>
-  inner_join(pba2_breeding_rank_max, by = join_by(pba3_block, common_name)) |>
-  inner_join(pba3_breeding_rank_max, by = join_by(pba3_block, common_name)) |>
+  left_join(pba2_breeding_rank_max, by = join_by(pba3_block, common_name)) |>
+  left_join(pba3_breeding_rank_max, by = join_by(pba3_block, common_name)) |>
   replace_na(list(
     pba2_breeding_category_max = "Not Observed",
     pba2_breeding_rank_max = 0,
