@@ -85,7 +85,7 @@ ui <- page_navbar(
           "Winter" = "Winter"
         )
       ),
-      reactableOutput("block_completion_table")
+      reactableOutput("block_progress_table")
     ),
 
     nav_panel(
@@ -130,7 +130,7 @@ ui <- page_navbar(
           accordion_panel(
             "Atlas Comparison",
             card(
-              reactableOutput("block_atlas_comparison_table"),
+              reactableOutput("block_atlas_comparison_missing_table"),
               max_height = 300,
               full_screen = TRUE
             )
@@ -151,6 +151,11 @@ ui <- page_navbar(
         )
       )
     )
+  ),
+
+  nav_panel(
+    "Block Completion",
+    reactableOutput("block_completion_table")
   ),
 
   nav_panel(
