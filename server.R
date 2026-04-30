@@ -195,6 +195,7 @@ completion_table <- block_summary |>
   st_drop_geometry() |>
   drop_na(pba3_block) |>
   arrange(block_region, block_county, block_name) |>
+  replace_na(list(Observed = 0, Possible = 0, Probable = 0, Confirmed = 0)) |>
   mutate(
     species_coded = Possible + Probable + Confirmed,
     possible_pct = Possible / species_coded,
