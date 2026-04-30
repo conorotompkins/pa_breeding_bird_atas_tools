@@ -163,13 +163,59 @@ pba3_region_block_hierarchy <- pba3_region_block_hierarchy |>
 
 ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
 
-seasons <- open_dataset("data/seasons.parquet") |>
-  collect()
+seasons <- read_parquet("data/seasons.parquet")
 
 #block-atlas comparison
 missing_pba2_breeding_category_obs <- read_parquet(
   "data/missing_pba2_breeding_category_obs.parquet"
 )
+
+missing_pba2_breeding_category_obs |>
+  mutate(atlas_diff = pba2_breeding_rank_max - pba3_breeding_rank_max) |>
+  arrange(pba3_block, desc(atlas_diff)) |>
+  ggplot(aes(atlas_diff)) +
+  geom_histogram()
+
+atlas_comparison <- read_parquet(
+  "data/atlas_max_breeding_category_comparison.parquet"
+)
+
+block_atlas_comparison <- atlas_comparison |>
+  drop_na(pba3_block) |>
+  summarize(
+    pct_coded_atlas_comparison = mean(
+      pba3_breeding_rank_max >= pba2_breeding_rank_max
+    ),
+    .by = pba3_block
+  )
+
+completion_table <- block_summary |>
+  filter(season == "Breeding") |>
+  st_drop_geometry() |>
+  drop_na(pba3_block) |>
+  mutate(
+    species_coded = Possible + Probable + Confirmed,
+    possible_pct = Possible / species_coded,
+    probable_pct = Probable / species_coded,
+    confirmed_pct = Confirmed / species_coded
+  ) |>
+  left_join(block_atlas_comparison, by = "pba3_block") |>
+  select(
+    pba3_block,
+    block_name,
+    block_region,
+    species_observed,
+    species_coded,
+    Observed,
+    Possible,
+    possible_pct,
+    Probable,
+    probable_pct,
+    Confirmed,
+    confirmed_pct,
+    pct_coded_atlas_comparison
+  ) |>
+  collect()
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output, session) {
@@ -317,82 +363,84 @@ server <- function(input, output, session) {
     )
   })
 
-  output$block_completion_table <- renderReactable({
-    block_summary |>
+  output$block_progress_table <- renderReactable({
+    x <- block_summary |>
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
       arrange(block_region, block_name) |>
-      collect() |>
-      reactable(
-        resizable = TRUE,
-        columns = list(
-          pba3_block = colDef(
-            name = "Block ID",
-            filterable = TRUE,
-            minWidth = 150,
-            cell = function(value) {
-              url <- paste0("https://ebird.org/atlaspa/block/", value)
-              tags$a(href = url, target = "_blank", value)
-            }
-          ),
-          block_name = colDef(
-            name = "Block name",
-            filterable = TRUE,
-            minWidth = 220
-          ),
-          block_region = colDef(
-            name = "Block region",
-            filterable = TRUE,
-            minWidth = 180
-          ),
-          season = colDef(name = "Season", minWidth = 100),
-          checklist_count = colDef(name = "Checklists", minWidth = 100),
-          species_observed = colDef(name = "Total species", minWidth = 120),
-          birders = colDef(name = "Atlasers", minWidth = 100),
-          duration_hours_total = colDef(
-            name = "Total",
-            format = colFormat(digits = 2),
-            minWidth = 150
-          ),
-          duration_hours_diurnal = colDef(
-            name = "Diurnal",
-            format = colFormat(digits = 2),
-            minWidth = 150
-          ),
-          duration_hours_nocturnal = colDef(
-            name = "Nocturnal",
-            format = colFormat(digits = 2),
-            minWidth = 150
-          ),
-          duration_hours_unknown = colDef(
-            name = "Unknown",
-            format = colFormat(digits = 2),
-            minWidth = 150
-          ),
-          effort_distance_km = colDef(
-            name = "Effort distance (km)",
-            minWidth = 175
-          ),
-          pct_missing_pba2_confirmations = colDef(
-            name = "% of PBA2 confirmations missing",
-            format = colFormat(percent = TRUE, digits = 0),
-            minWidth = 300
-          )
+      collect()
+
+    reactable(
+      x,
+      resizable = TRUE,
+      columns = list(
+        pba3_block = colDef(
+          name = "Block ID",
+          filterable = TRUE,
+          minWidth = 150,
+          cell = function(value) {
+            url <- paste0("https://ebird.org/atlaspa/block/", value)
+            tags$a(href = url, target = "_blank", value)
+          }
         ),
-        defaultPageSize = 15,
-        columnGroups = list(colGroup(
-          name = "Effort hours",
-          columns = c(
-            "duration_hours_total",
-            "duration_hours_diurnal",
-            "duration_hours_nocturnal",
-            "duration_hours_unknown"
-          )
-        ))
-      )
+        block_name = colDef(
+          name = "Block name",
+          filterable = TRUE,
+          minWidth = 220
+        ),
+        block_region = colDef(
+          name = "Block region",
+          filterable = TRUE,
+          minWidth = 180
+        ),
+        season = colDef(name = "Season", minWidth = 100),
+        checklist_count = colDef(name = "Checklists", minWidth = 100),
+        species_observed = colDef(name = "Total species", minWidth = 120),
+        birders = colDef(name = "Atlasers", minWidth = 100),
+        duration_hours_total = colDef(
+          name = "Total",
+          format = colFormat(digits = 2),
+          minWidth = 150
+        ),
+        duration_hours_diurnal = colDef(
+          name = "Diurnal",
+          format = colFormat(digits = 2),
+          minWidth = 150
+        ),
+        duration_hours_nocturnal = colDef(
+          name = "Nocturnal",
+          format = colFormat(digits = 2),
+          minWidth = 150
+        ),
+        duration_hours_unknown = colDef(
+          name = "Unknown",
+          format = colFormat(digits = 2),
+          minWidth = 150
+        ),
+        effort_distance_km = colDef(
+          name = "Effort distance (km)",
+          minWidth = 175
+        ),
+        pct_missing_pba2_confirmations = colDef(
+          name = "% of PBA2 confirmations missing",
+          format = colFormat(percent = TRUE, digits = 0),
+          minWidth = 300
+        )
+      ),
+      defaultPageSize = 15,
+      columnGroups = list(colGroup(
+        name = "Effort hours",
+        columns = c(
+          "duration_hours_total",
+          "duration_hours_diurnal",
+          "duration_hours_nocturnal",
+          "duration_hours_unknown"
+        )
+      ))
+    )
   })
 
-  atlas_comparison <- reactive({
+  atlas_comparison_missing <- reactive({
     req(input$report_block_id)
 
     missing_pba2_breeding_category_obs |>
@@ -401,10 +449,10 @@ server <- function(input, output, session) {
       arrange(desc(atlas_diff))
   })
 
-  output$block_atlas_comparison_table <- renderReactable({
-    req(nrow(atlas_comparison()) > 0)
+  output$block_atlas_comparison_missing_table <- renderReactable({
+    req(nrow(atlas_comparison_missing()) > 0)
 
-    atlas_comparison() |>
+    atlas_comparison_missing() |>
       select(-c(atlas_diff, block_region)) |>
       reactable(
         resizable = TRUE,
@@ -415,7 +463,7 @@ server <- function(input, output, session) {
             cell = function(value, index) {
               url <- paste0(
                 "https://ebird.org/atlaspa/block/",
-                atlas_comparison()$pba3_block[index]
+                atlas_comparison_missing()$pba3_block[index]
               )
               tags$a(href = url, target = "_blank", value)
             },
@@ -584,5 +632,69 @@ server <- function(input, output, session) {
       scale_y_continuous(expand = expansion(mult = .2)) +
       labs(title = "Effort hours across time", x = "Date", y = "Effort") +
       theme_bw(base_size = 18)
+  })
+
+  output$block_completion_table <- renderReactable({
+    reactable(
+      completion_table,
+      resizable = TRUE,
+      columns = list(
+        pba3_block = colDef(
+          name = "Block ID",
+          filterable = TRUE,
+          minWidth = 150,
+          cell = function(value) {
+            url <- paste0("https://ebird.org/atlaspa/block/", value)
+            tags$a(href = url, target = "_blank", value)
+          }
+        ),
+        block_name = colDef(
+          name = "Block name",
+          filterable = TRUE,
+          minWidth = 220
+        ),
+        block_region = colDef(
+          name = "Block region",
+          filterable = TRUE,
+          minWidth = 180
+        ),
+        species_observed = colDef("Total species"),
+        species_coded = colDef("Species coded"),
+        Observed = colDef("Coded"),
+        Possible = colDef("Coded"),
+        possible_pct = colDef(
+          "%",
+          format = colFormat(percent = TRUE, digits = 0)
+        ),
+        Probable = colDef("Coded"),
+        probable_pct = colDef(
+          "%",
+          format = colFormat(percent = TRUE, digits = 0)
+        ),
+        Confirmed = colDef("Coded"),
+        confirmed_pct = colDef(
+          "%",
+          format = colFormat(percent = TRUE, digits = 0)
+        ),
+        pct_coded_atlas_comparison = colDef(
+          "% coded >= PBA2",
+          minWidth = 180,
+          format = colFormat(percent = TRUE, digits = 0)
+        )
+      ),
+      columnGroups = list(
+        colGroup(
+          name = "Observed",
+          columns = c(
+            "Observed"
+          )
+        ),
+        colGroup(name = "Possible", columns = c("Possible", "possible_pct")),
+        colGroup(name = "Probable", columns = c("Probable", "probable_pct")),
+        colGroup(name = "Confirmed", columns = c("Confirmed", "confirmed_pct"))
+      ),
+      pagination = TRUE,
+      defaultPageSize = 20
+    )
   })
 }

@@ -28,6 +28,7 @@ files = [
     "/data/missing_pba2_breeding_category_obs.parquet",
     "/data/pa_breeding_bird_atlas_processed.parquet",
     "/data/seasons.parquet",
+    "/data/atlas_max_breeding_category_comparison.parquet",
 ]
 title = "PBA3 Tools"
 
