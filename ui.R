@@ -150,12 +150,12 @@ ui <- page_navbar(
           )
         )
       )
-    )
-  ),
+    ),
 
-  nav_panel(
-    "Block Completion",
-    reactableOutput("block_completion_table")
+    nav_panel(
+      "Block completion",
+      reactableOutput("block_completion_table")
+    ),
   ),
 
   nav_panel(
