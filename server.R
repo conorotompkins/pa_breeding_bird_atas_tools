@@ -399,7 +399,7 @@ server <- function(input, output, session) {
         block_county = colDef(
           name = "Block county",
           filterable = TRUE,
-          minWidth = 170
+          minWidth = 160
         ),
         season = colDef(name = "Season", minWidth = 100),
         checklist_count = colDef(name = "Checklists", minWidth = 100),
@@ -664,7 +664,7 @@ server <- function(input, output, session) {
         block_county = colDef(
           name = "County",
           filterable = TRUE,
-          minWidth = 170
+          minWidth = 160
         ),
         species_observed = colDef("Total species"),
         species_coded = colDef("Species coded"),
