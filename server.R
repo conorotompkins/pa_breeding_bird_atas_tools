@@ -192,6 +192,7 @@ block_atlas_comparison <- atlas_comparison |>
 completion_table <- block_summary |>
   filter(season == "Breeding") |>
   st_drop_geometry() |>
+  drop_na(pba3_block) |>
   mutate(
     species_coded = Possible + Probable + Confirmed,
     possible_pct = Possible / species_coded,
