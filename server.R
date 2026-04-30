@@ -121,6 +121,7 @@ block_summary <- open_dataset(
     pba3_block,
     block_name,
     block_region,
+    block_county,
     season,
     species_observed,
     Observed,
@@ -193,6 +194,8 @@ completion_table <- block_summary |>
   filter(season == "Breeding") |>
   st_drop_geometry() |>
   drop_na(pba3_block) |>
+  arrange(block_region, block_county, block_name) |>
+  replace_na(list(Observed = 0, Possible = 0, Probable = 0, Confirmed = 0)) |>
   mutate(
     species_coded = Possible + Probable + Confirmed,
     possible_pct = Possible / species_coded,
@@ -203,7 +206,7 @@ completion_table <- block_summary |>
   select(
     pba3_block,
     block_name,
-    block_region,
+    block_county,
     species_observed,
     species_coded,
     Observed,
@@ -367,7 +370,7 @@ server <- function(input, output, session) {
     x <- block_summary |>
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
-      arrange(block_region, block_name) |>
+      arrange(block_region, block_county, block_name) |>
       collect()
 
     reactable(
@@ -392,6 +395,11 @@ server <- function(input, output, session) {
           name = "Block region",
           filterable = TRUE,
           minWidth = 180
+        ),
+        block_county = colDef(
+          name = "Block county",
+          filterable = TRUE,
+          minWidth = 160
         ),
         season = colDef(name = "Season", minWidth = 100),
         checklist_count = colDef(name = "Checklists", minWidth = 100),
@@ -653,10 +661,10 @@ server <- function(input, output, session) {
           filterable = TRUE,
           minWidth = 220
         ),
-        block_region = colDef(
-          name = "Block region",
+        block_county = colDef(
+          name = "County",
           filterable = TRUE,
-          minWidth = 180
+          minWidth = 160
         ),
         species_observed = colDef("Total species"),
         species_coded = colDef("Species coded"),

@@ -15,8 +15,8 @@ source("R/mode.R")
 
 #block name lookup file
 block_name_lookup <- read_csv("data/block_name_lookup.csv") |>
-  distinct(block_id, region, block_name) |>
-  rename(pba3_block = block_id, block_region = region)
+  distinct(block_id, region, block_name, cnty_name) |>
+  rename(pba3_block = block_id, block_region = region, block_county = cnty_name)
 
 #location sunrise/sunset
 location_sunrise_sunset <- read_parquet(
@@ -483,6 +483,10 @@ atlas_max_breeding_rank_comparison <- bind_rows(
     block_region = coalesce(
       block_region,
       "Unknown region"
+    ),
+    block_county = coalesce(
+      block_county,
+      "Unknown county"
     )
   ) |>
   select(pba3_block, block_name, block_region, everything())
