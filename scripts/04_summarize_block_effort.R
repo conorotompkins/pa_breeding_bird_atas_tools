@@ -408,6 +408,14 @@ pbba2_df <- read_csv("data/PBBA2_block_species_codes.csv") |>
     values_to = "breeding_category_desc"
   ) |>
   filter(!str_detect(common_name, "N/A")) |>
+  #update common names to new taxonomy
+  mutate(
+    common_name = case_when(
+      common_name == "Yellow Warbler" ~ "Northern Yellow Warbler",
+      common_name == "Warbling Vireo" ~ "Eastern Warbling Vireo",
+      .default = common_name
+    ),
+  ) |>
   mutate(
     breeding_category_desc = case_when(
       breeding_category_desc == "Observed/Possible" ~ "Observed",
