@@ -136,6 +136,8 @@ block_summary <- open_dataset(
     duration_hours_unknown,
     effort_distance_km,
     pct_missing_pba2_confirmations,
+    pct_coded_atlas_comparison,
+    pba3_pba2_coded_count_compare_pct,
     effort_breakdown,
     geometry
   )
@@ -171,28 +173,23 @@ missing_pba2_breeding_category_obs <- read_parquet(
   "data/missing_pba2_breeding_category_obs.parquet"
 )
 
-missing_pba2_breeding_category_obs |>
-  mutate(atlas_diff = pba2_breeding_rank_max - pba3_breeding_rank_max) |>
-  arrange(pba3_block, desc(atlas_diff)) |>
-  ggplot(aes(atlas_diff)) +
-  geom_histogram()
+# atlas_max_breeding_category_comparison <- read_parquet(
+#   "data/atlas_max_breeding_category_comparison.parquet"
+# )
 
-atlas_comparison <- read_parquet(
-  "data/atlas_max_breeding_category_comparison.parquet"
-)
-
-block_atlas_comparison <- atlas_comparison |>
-  drop_na(pba3_block) |>
-  summarize(
-    pct_coded_atlas_comparison = mean(
-      pba3_breeding_rank_max >= pba2_breeding_rank_max
-    ),
-    .by = pba3_block
-  )
+# atlas_max_breeding_category_comparison <- atlas_max_breeding_category_comparison |>
+#   drop_na(pba3_block) |>
+#   summarize(
+#     pct_coded_atlas_comparison = mean(
+#       pba3_breeding_rank_max >= pba2_breeding_rank_max
+#     ),
+#     .by = pba3_block
+#   )
 
 completion_table <- block_summary |>
-  filter(season == "Breeding") |>
+  filter(season == "All seasons") |>
   st_drop_geometry() |>
+  as_tibble() |>
   drop_na(pba3_block) |>
   arrange(block_region, block_county, block_name) |>
   replace_na(list(Observed = 0, Possible = 0, Probable = 0, Confirmed = 0)) |>
@@ -202,7 +199,10 @@ completion_table <- block_summary |>
     probable_pct = Probable / species_coded,
     confirmed_pct = Confirmed / species_coded
   ) |>
-  left_join(block_atlas_comparison, by = "pba3_block") |>
+  # left_join(
+  #   atlas_max_breeding_category_comparison,
+  #   by = c("pba3_block", "season")
+  # ) |>
   select(
     pba3_block,
     block_name,
@@ -216,7 +216,23 @@ completion_table <- block_summary |>
     probable_pct,
     Confirmed,
     confirmed_pct,
-    pct_coded_atlas_comparison
+    pct_missing_pba2_confirmations,
+    pba3_pba2_coded_count_compare_pct
+  ) |>
+  mutate(
+    flag_coded_species = species_coded >= 70,
+    flag_confirmed_pct = confirmed_pct >= .25,
+    flag_possible_pct = possible_pct < .25,
+    flag_coded_atlas_comparison = pba3_pba2_coded_count_compare_pct >= .8
+  ) |>
+  select(
+    pba3_block,
+    block_name,
+    block_county,
+    flag_coded_species,
+    flag_possible_pct,
+    flag_confirmed_pct,
+    flag_coded_atlas_comparison
   ) |>
   collect()
 
@@ -643,6 +659,8 @@ server <- function(input, output, session) {
   })
 
   output$block_completion_table <- renderReactable({
+    grouped_col_style <- list(fontSize = ".8rem")
+
     reactable(
       completion_table,
       resizable = TRUE,
@@ -666,40 +684,37 @@ server <- function(input, output, session) {
           filterable = TRUE,
           minWidth = 160
         ),
-        species_observed = colDef("Total species"),
-        species_coded = colDef("Species coded"),
-        Observed = colDef("Coded"),
-        Possible = colDef("Coded"),
-        possible_pct = colDef(
-          "%",
-          format = colFormat(percent = TRUE, digits = 0)
+        flag_coded_species = colDef(
+          name = "Coded species >= 70",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         ),
-        Probable = colDef("Coded"),
-        probable_pct = colDef(
-          "%",
-          format = colFormat(percent = TRUE, digits = 0)
+        flag_confirmed_pct = colDef(
+          name = "Confirmed % >= 25%",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         ),
-        Confirmed = colDef("Coded"),
-        confirmed_pct = colDef(
-          "%",
-          format = colFormat(percent = TRUE, digits = 0)
+        flag_possible_pct = colDef(
+          "Possible % < 25%",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         ),
-        pct_coded_atlas_comparison = colDef(
-          "% coded >= PBA2",
-          minWidth = 180,
-          format = colFormat(percent = TRUE, digits = 0)
+        flag_coded_atlas_comparison = colDef(
+          "Coded species >= 80% of PBA2",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         )
       ),
       columnGroups = list(
         colGroup(
-          name = "Observed",
+          name = "Ideal Completion Criteria",
           columns = c(
-            "Observed"
+            "flag_coded_species",
+            "flag_confirmed_pct",
+            "flag_possible_pct",
+            "flag_coded_atlas_comparison"
           )
-        ),
-        colGroup(name = "Possible", columns = c("Possible", "possible_pct")),
-        colGroup(name = "Probable", columns = c("Probable", "probable_pct")),
-        colGroup(name = "Confirmed", columns = c("Confirmed", "confirmed_pct"))
+        )
       ),
       pagination = TRUE,
       defaultPageSize = 20
