@@ -23,8 +23,6 @@ location_sunrise_sunset <- read_parquet(
   "data/location_sunrise_sunset.parquet"
 )
 
-glimpse(location_sunrise_sunset)
-
 breeding_lookup <- tibble(
   breeding_category = c("0", "C1", "C2", "C3", "C4"), #consider C0 instead of 0 to be consistent
   breeding_category_desc = c(
@@ -71,8 +69,6 @@ ebd_df |>
 
 ebd_df <- ebd_df |>
   left_join(breeding_lookup, by = join_by(breeding_category))
-
-glimpse(ebd_df)
 
 ebd_df |>
   distinct(breeding_category, breeding_code, breeding_rank) |>
@@ -515,23 +511,29 @@ atlas_max_breeding_rank_comparison |>
   arrange(pba3_block, desc(pba2_breeding_rank_max)) |>
   write_parquet("data/missing_pba2_breeding_category_obs.parquet")
 
-confirmed_pba2_unconfirmed_pba3 <- atlas_max_breeding_rank_comparison |>
+atlas_block_comparison <- atlas_max_breeding_rank_comparison |>
   summarize(
-    species_count = n(),
+    species_count_pba2 = sum(pba2_breeding_rank_max > 0),
+    species_coded_pba2 = sum(pba2_breeding_rank_max > 1),
+    species_count_pba3 = sum(pba3_breeding_rank_max > 0),
+    species_coded_pba3 = sum(pba3_breeding_rank_max > 1),
     pct_missing_pba2_confirmations = mean(
-      pba2_breeding_rank_max > pba3_breeding_rank_max
+      pba2_breeding_rank_max == 4 & pba3_breeding_rank_max < 4,
+      na.rm = TRUE
+    ),
+    pct_coded_atlas_comparison = mean(
+      pba3_breeding_rank_max >= pba2_breeding_rank_max,
+      na.rm = TRUE
     ),
     .by = pba3_block
   ) |>
-  arrange(desc(species_count))
+  mutate(
+    pba3_pba2_coded_count_compare_pct = species_coded_pba3 / species_coded_pba2
+  ) |>
+  arrange(desc(species_count_pba3))
 
-confirmed_pba2_unconfirmed_pba3 |>
-  ggplot(aes(species_count, pct_missing_pba2_confirmations)) +
-  geom_bin_2d() +
-  scale_fill_viridis_c()
-
-confirmed_pba2_unconfirmed_pba3 |>
-  write_parquet("data/confirmed_pba2_unconfirmed_pba3.parquet")
+atlas_block_comparison |>
+  write_parquet("data/atlas_block_comparison.parquet")
 
 #summary metrics by season
 summarize_season <- function(
@@ -758,9 +760,9 @@ block_summary_seasons <- left_join(
 
 block_summary_seasons <- block_summary_seasons |>
   left_join(
-    confirmed_pba2_unconfirmed_pba3 |>
-      select(-species_count) |>
-      mutate(season = "All seasons")
+    atlas_block_comparison |>
+      mutate(season = "All seasons"),
+    by = c("pba3_block", "season")
   ) |>
   left_join(block_name_lookup, by = join_by(pba3_block)) |>
   mutate(
