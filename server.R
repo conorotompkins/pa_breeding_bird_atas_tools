@@ -663,7 +663,7 @@ server <- function(input, output, session) {
         pba3_block = colDef(
           name = "Block ID",
           filterable = TRUE,
-          minWidth = 100,
+          minWidth = 110,
           cell = function(value) {
             url <- paste0("https://ebird.org/atlaspa/block/", value)
             tags$a(href = url, target = "_blank", value)
