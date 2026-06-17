@@ -663,7 +663,7 @@ server <- function(input, output, session) {
         pba3_block = colDef(
           name = "Block ID",
           filterable = TRUE,
-          minWidth = 150,
+          minWidth = 100,
           cell = function(value) {
             url <- paste0("https://ebird.org/atlaspa/block/", value)
             tags$a(href = url, target = "_blank", value)
@@ -672,12 +672,12 @@ server <- function(input, output, session) {
         block_name = colDef(
           name = "Block name",
           filterable = TRUE,
-          minWidth = 220
+          minWidth = 150
         ),
         block_county = colDef(
           name = "County",
           filterable = TRUE,
-          minWidth = 160
+          minWidth = 100
         ),
         flag_coded_species = colDef(
           name = "Coded species >= 70",
