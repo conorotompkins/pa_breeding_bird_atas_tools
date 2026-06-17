@@ -173,19 +173,6 @@ missing_pba2_breeding_category_obs <- read_parquet(
   "data/missing_pba2_breeding_category_obs.parquet"
 )
 
-# atlas_max_breeding_category_comparison <- read_parquet(
-#   "data/atlas_max_breeding_category_comparison.parquet"
-# )
-
-# atlas_max_breeding_category_comparison <- atlas_max_breeding_category_comparison |>
-#   drop_na(pba3_block) |>
-#   summarize(
-#     pct_coded_atlas_comparison = mean(
-#       pba3_breeding_rank_max >= pba2_breeding_rank_max
-#     ),
-#     .by = pba3_block
-#   )
-
 completion_table <- block_summary |>
   filter(season == "All seasons") |>
   st_drop_geometry() |>
@@ -199,10 +186,6 @@ completion_table <- block_summary |>
     probable_pct = Probable / species_coded,
     confirmed_pct = Confirmed / species_coded
   ) |>
-  # left_join(
-  #   atlas_max_breeding_category_comparison,
-  #   by = c("pba3_block", "season")
-  # ) |>
   mutate(
     flag_coded_species = species_coded >= 70,
     flag_confirmed_pct = confirmed_pct >= .25,
