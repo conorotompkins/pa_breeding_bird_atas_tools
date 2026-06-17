@@ -386,6 +386,7 @@ server <- function(input, output, session) {
     x <- block_summary |>
       st_drop_geometry() |>
       filter(season == input$season_variable_table) |>
+      select(-season) |>
       arrange(block_region, block_county, block_name) |>
       collect()
 
@@ -417,7 +418,6 @@ server <- function(input, output, session) {
           filterable = TRUE,
           minWidth = 160
         ),
-        season = colDef(name = "Season", minWidth = 100),
         checklist_count = colDef(name = "Checklists", minWidth = 100),
         species_observed = colDef(name = "Total species", minWidth = 120),
         birders = colDef(name = "Atlasers", minWidth = 100),
@@ -449,18 +449,48 @@ server <- function(input, output, session) {
           name = "% of PBA2 confirmations missing",
           format = colFormat(percent = TRUE, digits = 0),
           minWidth = 300
+        ),
+        pct_coded_atlas_comparison = colDef(
+          name = "% of species coded PBA3 >= PBA2",
+          format = colFormat(percent = TRUE, digits = 0),
+          minWidth = 300
+        ),
+        pba3_pba2_coded_count_compare_pct = colDef(
+          name = "Coded species: PBA3 vs. PBA2",
+          format = colFormat(percent = TRUE, digits = 0),
+          minWidth = 300
         )
       ),
       defaultPageSize = 15,
-      columnGroups = list(colGroup(
-        name = "Effort hours",
-        columns = c(
-          "duration_hours_total",
-          "duration_hours_diurnal",
-          "duration_hours_nocturnal",
-          "duration_hours_unknown"
+      columnGroups = list(
+        colGroup(
+          name = "Coding",
+          columns = c(
+            "species_observed",
+            "Observed",
+            "Possible",
+            "Probable",
+            "Confirmed"
+          )
+        ),
+        colGroup(
+          name = "Effort hours",
+          columns = c(
+            "duration_hours_total",
+            "duration_hours_diurnal",
+            "duration_hours_nocturnal",
+            "duration_hours_unknown"
+          )
+        ),
+        colGroup(
+          name = "Atlas comparison metrics",
+          columns = c(
+            "pct_missing_pba2_confirmations",
+            "pct_coded_atlas_comparison",
+            "pba3_pba2_coded_count_compare_pct"
+          )
         )
-      ))
+      )
     )
   })
 
