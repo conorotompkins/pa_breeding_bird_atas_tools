@@ -5,7 +5,7 @@ library(sf)
 library(tools)
 library(arrow)
 
-auk_file <- "data/ebd_US-PA_202401_202604_smp_relApr-2026/ebd_US-PA_202401_202604_smp_relApr-2026.txt"
+auk_file <- "data/ebd_US-PA_202401_202605_smp_relMay-2026/ebd_US-PA_202401_202605_smp_relMay-2026.txt"
 
 file.exists(auk_file) == TRUE
 
