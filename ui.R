@@ -6,6 +6,27 @@ library(shinyWidgets)
 library(mapgl)
 library(gt)
 
+csvDownloadButton <- function(
+  id,
+  filename = NULL,
+  label = "Download as CSV"
+) {
+  div(
+    style = "text-align: left;",
+    tags$button(
+      tagList(icon("download"), label),
+      type = "button",
+      class = "btn btn-sm btn-outline-secondary",
+      style = "width: auto; display: inline-block;",
+      onclick = sprintf(
+        "Reactable.downloadDataCSV('%s', '%s')",
+        id,
+        filename
+      )
+    )
+  )
+}
+
 completion_criteria_value_boxes <- list(
   value_box(title = "Completion criterion 1", value = 1),
   value_box(title = "Completion criterion 2", value = 2),
@@ -75,7 +96,6 @@ ui <- page_navbar(
 
     nav_panel(
       "Table",
-
       radioGroupButtons(
         inputId = "season_variable_table",
         label = "Select season",
@@ -84,6 +104,10 @@ ui <- page_navbar(
           "Breeding" = "Breeding",
           "Winter" = "Winter"
         )
+      ),
+      csvDownloadButton(
+        "block_progress_table",
+        filename = "pba3_block_progress_table.csv"
       ),
       reactableOutput("block_progress_table")
     ),
@@ -130,6 +154,10 @@ ui <- page_navbar(
           accordion_panel(
             "Atlas Comparison",
             card(
+              csvDownloadButton(
+                id = "block_atlas_comparison_missing_table",
+                filename = "atlas_comparison_table.csv"
+              ),
               reactableOutput("block_atlas_comparison_missing_table"),
               max_height = 300,
               full_screen = TRUE
@@ -154,6 +182,10 @@ ui <- page_navbar(
 
     nav_panel(
       "Block completion",
+      csvDownloadButton(
+        "block_completion_table",
+        filename = "pba3_block_completion_table.csv"
+      ),
       reactableOutput("block_completion_table")
     ),
   ),
