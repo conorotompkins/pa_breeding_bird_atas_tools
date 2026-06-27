@@ -696,13 +696,30 @@ summarize_season <- function(
   block_dn_summary <- block_dn_summary |>
     left_join(block_dn_date)
 
+  print("calculating breeding season coverage")
+  block_breeding_season_coverage <- checklist_df |>
+    mutate(
+      observation_month = month(observation_datetime, abbr = TRUE, label = TRUE)
+    ) |>
+    distinct(pba3_block, observation_month) |>
+    collect() |>
+    inner_join(
+      seasons |> filter(season == "Breeding"),
+      by = c("observation_month" = "month")
+    ) |>
+    summarize(
+      breeding_season_months_covered = n_distinct(observation_month),
+      .by = pba3_block
+    )
+
   df_list <- list(
     block_checklist_count,
     block_species_observed,
     block_birders,
     block_effort,
     block_species_coded,
-    block_dn_summary
+    block_dn_summary,
+    block_breeding_season_coverage
   )
 
   block_summary <- reduce(df_list, left_join, by = "pba3_block")

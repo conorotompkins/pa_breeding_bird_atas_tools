@@ -138,6 +138,7 @@ block_summary <- open_dataset(
     pct_missing_pba2_confirmations,
     pct_coded_atlas_comparison,
     pba3_pba2_coded_count_compare_pct,
+    breeding_season_months_covered,
     effort_breakdown,
     geometry
   )
@@ -191,7 +192,8 @@ completion_table <- block_summary |>
     flag_confirmed_pct = confirmed_pct >= .25,
     flag_possible_pct = possible_pct < .25,
     flag_coded_atlas_comparison = pba3_pba2_coded_count_compare_pct >= .8,
-    flag_20_effort_hours = duration_hours_total >= 20
+    flag_20_effort_hours = duration_hours_total >= 20,
+    flag_breeeding_season_coverage = breeding_season_months_covered >= 3
   ) |>
   select(
     pba3_block,
@@ -424,6 +426,10 @@ server <- function(input, output, session) {
           name = "Coded species: PBA3 vs. PBA2",
           format = colFormat(percent = TRUE, digits = 0),
           minWidth = 300
+        ),
+        breeding_season_months_covered = colDef(
+          name = "Breeding season months covered",
+          minWidth = 300
         )
       ),
       defaultPageSize = 15,
@@ -439,12 +445,14 @@ server <- function(input, output, session) {
           )
         ),
         colGroup(
-          name = "Effort hours",
+          name = "Effort",
           columns = c(
             "duration_hours_total",
             "duration_hours_diurnal",
             "duration_hours_nocturnal",
-            "duration_hours_unknown"
+            "duration_hours_unknown",
+            "effort_distance_km",
+            "breeding_season_months_covered"
           )
         ),
         colGroup(
@@ -703,6 +711,11 @@ server <- function(input, output, session) {
           name = ">= 20 effort hours",
           filterable = TRUE,
           headerStyle = grouped_col_style
+        ),
+        flag_breeeding_season_coverage = colDef(
+          name = ">= 3 months with checklists in breeding season",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         )
       ),
       columnGroups = list(
@@ -713,7 +726,8 @@ server <- function(input, output, session) {
             "flag_confirmed_pct",
             "flag_possible_pct",
             "flag_coded_atlas_comparison",
-            "flag_20_effort_hours"
+            "flag_20_effort_hours",
+            "flag_breeeding_season_coverage"
           )
         )
       ),
