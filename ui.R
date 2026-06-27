@@ -8,7 +8,7 @@ library(gt)
 
 csvDownloadButton <- function(
   id,
-  filename = "pba3_completion_table.csv",
+  filename = NULL,
   label = "Download as CSV"
 ) {
   div(
