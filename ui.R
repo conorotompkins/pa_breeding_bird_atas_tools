@@ -6,6 +6,27 @@ library(shinyWidgets)
 library(mapgl)
 library(gt)
 
+csvDownloadButton <- function(
+  id,
+  filename = "pba3_completion_table.csv",
+  label = "Download as CSV"
+) {
+  div(
+    style = "text-align: left;",
+    tags$button(
+      tagList(icon("download"), label),
+      type = "button",
+      class = "btn btn-sm btn-outline-secondary",
+      style = "width: auto; display: inline-block;",
+      onclick = sprintf(
+        "Reactable.downloadDataCSV('%s', '%s')",
+        id,
+        filename
+      )
+    )
+  )
+}
+
 completion_criteria_value_boxes <- list(
   value_box(title = "Completion criterion 1", value = 1),
   value_box(title = "Completion criterion 2", value = 2),
@@ -154,6 +175,10 @@ ui <- page_navbar(
 
     nav_panel(
       "Block completion",
+      csvDownloadButton(
+        "block_completion_table",
+        filename = "pba3_block_completion_table.csv"
+      ),
       reactableOutput("block_completion_table")
     ),
   ),
