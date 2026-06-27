@@ -154,6 +154,10 @@ ui <- page_navbar(
           accordion_panel(
             "Atlas Comparison",
             card(
+              csvDownloadButton(
+                id = "block_atlas_comparison_missing_table",
+                filename = "atlas_comparison_table.csv"
+              ),
               reactableOutput("block_atlas_comparison_missing_table"),
               max_height = 300,
               full_screen = TRUE
