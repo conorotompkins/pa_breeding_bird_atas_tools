@@ -96,7 +96,6 @@ ui <- page_navbar(
 
     nav_panel(
       "Table",
-
       radioGroupButtons(
         inputId = "season_variable_table",
         label = "Select season",
@@ -105,6 +104,10 @@ ui <- page_navbar(
           "Breeding" = "Breeding",
           "Winter" = "Winter"
         )
+      ),
+      csvDownloadButton(
+        "block_progress_table",
+        filename = "pba3_block_progress_table.csv"
       ),
       reactableOutput("block_progress_table")
     ),
