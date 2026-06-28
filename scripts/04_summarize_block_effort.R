@@ -409,6 +409,10 @@ pbba2_df <- read_csv("data/PBBA2_block_species_codes.csv") |>
     common_name = case_when(
       common_name == "Yellow Warbler" ~ "Northern Yellow Warbler",
       common_name == "Warbling Vireo" ~ "Eastern Warbling Vireo",
+      common_name == "Barn Owl" ~ "American Barn Owl",
+      common_name == "Herring Gull" ~ "American Herring Gull",
+      common_name == "Northern Goshawk" ~ "American Goshawk",
+      common_name == "House Wren" ~ "Northern House Wren",
       .default = common_name
     ),
   ) |>
