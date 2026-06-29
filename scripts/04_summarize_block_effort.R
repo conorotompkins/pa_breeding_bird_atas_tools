@@ -37,6 +37,9 @@ breeding_lookup <- tibble(
 
 breeding_lookup
 
+#nocturnal priority species
+nocturnal_species <- read_csv("data/nocturnal_priority_species.csv")
+
 #checklists
 tic()
 ebd_df <- open_dataset("data/pa_breeding_bird_atlas_processed.parquet")
@@ -547,6 +550,7 @@ summarize_season <- function(
   season_filter,
   pba2_block_data = pba2_blocks
 ) {
+  print(season_filter)
   seasons_df <- seasons_df |>
     filter(season == season_filter)
 
@@ -673,6 +677,11 @@ summarize_season <- function(
       duration_hours_diurnal,
       duration_hours_nocturnal,
       duration_hours_unknown
+    ) |>
+    mutate(
+      duration_hours_diurnal = coalesce(duration_hours_diurnal, 0),
+      duration_hours_nocturnal = coalesce(duration_hours_nocturnal, 0),
+      duration_hours_unknown = coalesce(duration_hours_unknown, 0)
     )
 
   block_dn_date <- block_dn_raw |>
@@ -716,6 +725,20 @@ summarize_season <- function(
       .by = pba3_block
     )
 
+  print("calculating nocturnal species coded")
+  block_nocturnal_species_coded <- checklist_df |>
+    semi_join(nocturnal_species, by = "common_name") |>
+    filter(breeding_rank >= 2) |>
+    summarize(
+      nocturnal_species_coded = n_distinct(common_name),
+      .by = pba3_block
+    ) |>
+    collect() |>
+    complete(
+      pba3_block = checklist_df |> distinct(pba3_block) |> collect() |> pull()
+    ) |>
+    mutate(nocturnal_species_coded = coalesce(nocturnal_species_coded, 0))
+
   df_list <- list(
     block_checklist_count,
     block_species_observed,
@@ -723,7 +746,8 @@ summarize_season <- function(
     block_effort,
     block_species_coded,
     block_dn_summary,
-    block_breeding_season_coverage
+    block_breeding_season_coverage,
+    block_nocturnal_species_coded
   )
 
   block_summary <- reduce(df_list, left_join, by = "pba3_block")
