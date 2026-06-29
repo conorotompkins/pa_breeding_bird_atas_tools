@@ -10,8 +10,8 @@ id = "019c15fc-5025-6d7c-3432-6474a12c845c"
 dashboard_url = "https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c"
 direct_url = "https://019c15fc-5025-6d7c-3432-6474a12c845c.share.connect.posit.cloud"
 logs_url = "https://connect.posit.cloud/conorotompkins/content/019c15fc-5025-6d7c-3432-6474a12c845c/history"
-deployed_at = "2026-06-29T18:40:34.731Z"
-bundle_id = "019f14ae-9548-2870-8619-fd6218aed78d"
+deployed_at = "2026-06-29T21:03:37.953Z"
+bundle_id = "019f1531-9991-b53c-f669-ad2358258307"
 files = [
     ".posit/publish/PBA3 Tools-HJG8.toml",
     ".posit/publish/deployments/deployment-KBVL.toml",
@@ -25,6 +25,7 @@ files = [
     "data/block_summary_seasons.parquet",
     "data/breeding_calendar.csv",
     "data/ebird_release.txt",
+    "data/focal_species.csv",
     "data/missing_pba2_breeding_category_obs.parquet",
     "data/pa_breeding_bird_atlas_processed.parquet",
     "data/seasons.parquet",
@@ -67,6 +68,7 @@ files = [
     "/data/pa_breeding_bird_atlas_processed.parquet",
     "/data/seasons.parquet",
     "/data/atlas_max_breeding_category_comparison.parquet",
+    "/data/focal_species.csv",
 ]
 title = "PBA3 Tools"
 
