@@ -546,6 +546,7 @@ summarize_season <- function(
   season_filter,
   pba2_block_data = pba2_blocks
 ) {
+  print(season_filter)
   seasons_df <- seasons_df |>
     filter(season == season_filter)
 
@@ -672,6 +673,11 @@ summarize_season <- function(
       duration_hours_diurnal,
       duration_hours_nocturnal,
       duration_hours_unknown
+    ) |>
+    mutate(
+      duration_hours_diurnal = coalesce(duration_hours_diurnal, 0),
+      duration_hours_nocturnal = coalesce(duration_hours_nocturnal, 0),
+      duration_hours_unknown = coalesce(duration_hours_unknown, 0)
     )
 
   block_dn_date <- block_dn_raw |>
@@ -723,7 +729,11 @@ summarize_season <- function(
       nocturnal_species_coded = n_distinct(common_name),
       .by = pba3_block
     ) |>
-    collect()
+    collect() |>
+    complete(
+      pba3_block = checklist_df |> distinct(pba3_block) |> collect() |> pull()
+    ) |>
+    mutate(nocturnal_species_coded = coalesce(nocturnal_species_coded, 0))
 
   df_list <- list(
     block_checklist_count,
