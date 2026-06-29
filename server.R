@@ -139,6 +139,7 @@ block_summary <- open_dataset(
     pct_coded_atlas_comparison,
     pba3_pba2_coded_count_compare_pct,
     breeding_season_months_covered,
+    nocturnal_species_coded,
     effort_breakdown,
     geometry
   )
@@ -193,7 +194,9 @@ completion_table <- block_summary |>
     flag_possible_pct = possible_pct < .25,
     flag_coded_atlas_comparison = pba3_pba2_coded_count_compare_pct >= .8,
     flag_20_effort_hours = duration_hours_total >= 20,
-    flag_breeeding_season_coverage = breeding_season_months_covered >= 3
+    flag_breeeding_season_coverage = breeding_season_months_covered >= 3,
+    flag_nocturnal_coverage = nocturnal_species_coded >= 2 |
+      duration_hours_nocturnal >= 2
   ) |>
   select(
     pba3_block,
@@ -430,6 +433,10 @@ server <- function(input, output, session) {
         breeding_season_months_covered = colDef(
           name = "Breeding season months covered",
           minWidth = 300
+        ),
+        nocturnal_species_coded = colDef(
+          name = "Nocturnal species coded",
+          minWidth = 300
         )
       ),
       defaultPageSize = 15,
@@ -441,7 +448,8 @@ server <- function(input, output, session) {
             "Observed",
             "Possible",
             "Probable",
-            "Confirmed"
+            "Confirmed",
+            "nocturnal_species_coded"
           )
         ),
         colGroup(
@@ -716,6 +724,11 @@ server <- function(input, output, session) {
           name = ">= 3 months with checklists in breeding season",
           filterable = TRUE,
           headerStyle = grouped_col_style
+        ),
+        flag_nocturnal_coverage = colDef(
+          name = ">= 2 nocturnal hours OR >= 2 nocturnal species coded",
+          filterable = TRUE,
+          headerStyle = grouped_col_style
         )
       ),
       columnGroups = list(
@@ -727,7 +740,8 @@ server <- function(input, output, session) {
             "flag_possible_pct",
             "flag_coded_atlas_comparison",
             "flag_20_effort_hours",
-            "flag_breeeding_season_coverage"
+            "flag_breeeding_season_coverage",
+            "flag_nocturnal_coverage"
           )
         )
       ),
