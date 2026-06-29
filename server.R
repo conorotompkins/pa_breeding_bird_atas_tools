@@ -202,10 +202,22 @@ completion_table <- block_summary |>
     flag_nocturnal_coverage = nocturnal_species_coded >= 2 |
       duration_hours_nocturnal >= 2
   ) |>
+  rowwise() |>
+  mutate(
+    all_criteria_complete = flag_coded_species &
+      flag_confirmed_pct &
+      flag_possible_pct &
+      flag_coded_atlas_comparison &
+      flag_20_effort_hours &
+      flag_breeeding_season_coverage &
+      flag_nocturnal_coverage
+  ) |>
+  ungroup() |>
   select(
     pba3_block,
     block_name,
     block_county,
+    all_criteria_complete,
     starts_with("flag")
   ) |>
   collect()
@@ -705,6 +717,11 @@ server <- function(input, output, session) {
         ),
         block_county = colDef(
           name = "County",
+          filterable = TRUE,
+          minWidth = 100
+        ),
+        all_criteria_complete = colDef(
+          name = "All criteria complete",
           filterable = TRUE,
           minWidth = 100
         ),
