@@ -17,6 +17,9 @@ options(shiny.fullstacktrace = FALSE)
 
 #set_defaults(map_service = "esri", map_type = "natgeo_world_map")
 
+####focal species from amber
+focal_species <- read_csv("data/focal_species.csv")
+
 ####ebird release
 ebird_release <- read_file("data/ebird_release.txt")
 
@@ -89,6 +92,7 @@ format_date <- function(x) {
   str_c(current_year, "-", x) |> ydm()
 }
 
+####safe dates
 safe_dates <- read_csv("data/bird_safe_dates.csv") |>
   select(
     common_name,
@@ -481,14 +485,23 @@ server <- function(input, output, session) {
     missing_pba2_breeding_category_obs |>
       filter(pba3_block == input$report_block_id) |>
       mutate(atlas_diff = pba2_breeding_rank_max - pba3_breeding_rank_max) |>
-      arrange(desc(atlas_diff))
+      arrange(desc(atlas_diff)) |>
+      left_join(focal_species, by = "common_name") |>
+      mutate(is_focal = coalesce(is_focal, FALSE)) |>
+      select(
+        pba3_block,
+        block_name,
+        common_name,
+        is_focal,
+        pba3_breeding_category_max,
+        pba2_breeding_category_max
+      )
   })
 
   output$block_atlas_comparison_missing_table <- renderReactable({
     req(nrow(atlas_comparison_missing()) > 0)
 
     atlas_comparison_missing() |>
-      select(-c(atlas_diff, block_region)) |>
       reactable(
         resizable = TRUE,
         columns = list(
@@ -508,11 +521,10 @@ server <- function(input, output, session) {
           pba3_breeding_category_max = colDef(
             name = "Max PBA3 Breeding Category"
           ),
-          pba3_breeding_rank_max = colDef(name = "Max PBA3 Breeding Rank"),
           pba2_breeding_category_max = colDef(
             name = "Max PBA2 Breeding Category"
           ),
-          pba2_breeding_rank_max = colDef(name = "Max PBA2 Breeding Rank")
+          is_focal = colDef(name = "Focal species", filterable = TRUE)
         ),
         pagination = FALSE
       )
