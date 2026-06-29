@@ -159,7 +159,7 @@ ui <- page_navbar(
                 filename = "atlas_comparison_table.csv"
               ),
               reactableOutput("block_atlas_comparison_missing_table"),
-              max_height = 300,
+              max_height = 700,
               full_screen = TRUE
             )
           ),

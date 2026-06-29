@@ -526,7 +526,8 @@ server <- function(input, output, session) {
           ),
           is_focal = colDef(name = "Focal species", filterable = TRUE)
         ),
-        pagination = FALSE
+        pagination = FALSE,
+        height = 600
       )
   })
 
