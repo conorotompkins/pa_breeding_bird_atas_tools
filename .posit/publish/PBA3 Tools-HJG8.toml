@@ -29,6 +29,7 @@ files = [
     "/data/pa_breeding_bird_atlas_processed.parquet",
     "/data/seasons.parquet",
     "/data/atlas_max_breeding_category_comparison.parquet",
+    "/data/focal_species.csv",
 ]
 title = "PBA3 Tools"
 
